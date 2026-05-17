@@ -107,7 +107,7 @@ export function ReviewSection({
     const gaodeRatingLine = gaodeValid
       ? LOCPIN + " 高德地圖評分：" + gaodeRating + " / 5.0 分（內地旅客主要參考）"
       : gaodeUnregistered
-      ? LOCPIN + " 高德地圖：尚未建檔（內地旅客更難搜尋）"
+      ? LOCPIN + " 高德地圖：未建立商戶頁面（內地旅客更難搜尋）"
       : "";
     const issueLines = selectedIssues
       .map(c => WARN + " " + ISSUE_LABELS[c])
@@ -155,8 +155,9 @@ export function ReviewSection({
   }[ratingTier];
 
   const gaodeNum          = parseFloat(gaodeRating);
-  const gaodeValid        = gaodeRating !== "" && gaodeRating !== "未建檔" && !isNaN(gaodeNum);
-  const gaodeUnregistered = gaodeRating === "未建檔";
+  // support legacy "未建檔" entries already saved in DB
+  const gaodeUnregistered = gaodeRating === "未建立" || gaodeRating === "未建檔";
+  const gaodeValid        = gaodeRating !== "" && !gaodeUnregistered && !isNaN(gaodeNum);
   const gaodeShowInReport = gaodeValid || gaodeUnregistered;
   const gaodeTier         = gaodeNum >= 4.2 ? "good" : gaodeNum >= 3.7 ? "warn" : "danger";
   const gaodeBigNumCls    = { good: "text-green-400", warn: "text-yellow-400", danger: "text-red-400" }[gaodeTier];
@@ -180,7 +181,7 @@ export function ReviewSection({
     reportBadge: "數碼營銷健康審查報告",
     reportShop:  "商戸名稱",
     reportGMaps:  "Google Maps 評分",
-    reportGaode:  "高德地圖評分（內地旅客）",
+    reportGaode:  "Amap 高德地圖評分（內地旅客）",
     issueCount:  (n: number) => "發現 " + n + " 個數碼營銷漏洞",
     warning:     "根據大數據分析，未經優化的商戶檔案預計將導致高達",
     warningPct:  "15% – 20%",
@@ -226,19 +227,19 @@ export function ReviewSection({
           {/* 高德地圖 rating */}
           <div className="space-y-1.5">
             <Label className="flex items-center gap-1.5">
-              📍 高德地圖評分（內地旅客）
+              📍 Amap 高德地圖評分（內地旅客）
             </Label>
             <div className="flex items-center gap-2">
               <Input
                 name="gaodeRating"
                 value={gaodeRating}
                 onChange={e => setGaodeRating(e.target.value)}
-                placeholder="未建檔"
+                placeholder="未建立"
                 className="max-w-[90px]"
                 inputMode="decimal"
               />
               <span className="text-sm text-muted-foreground">/ 5.0</span>
-              {gaodeRating && gaodeRating !== "未建檔" && !isNaN(parseFloat(gaodeRating)) && (
+              {gaodeValid && (
                 <span className={cn(
                   "text-xs font-bold px-2 py-0.5 rounded-full border",
                   parseFloat(gaodeRating) >= 4.2
@@ -347,10 +348,10 @@ export function ReviewSection({
                 {/* 高德地圖 rating */}
                 {gaodeShowInReport && (
                   <div className="space-y-1">
-                    <p className="text-zinc-500 text-xs">高德地圖評分（內地旅客）</p>
+                    <p className="text-zinc-500 text-xs">{S.reportGaode}</p>
                     {gaodeUnregistered ? (
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-zinc-300 text-xl font-bold leading-none">尚未建檔</span>
+                        <span className="text-zinc-300 text-xl font-bold leading-none">未建立商戶頁面</span>
                         <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-zinc-700 text-zinc-300">
                           🔴 急需建立
                         </span>
