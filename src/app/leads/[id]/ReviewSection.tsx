@@ -361,7 +361,7 @@ export function ReviewSection({
                     </p>
                     {gaodeUnregistered ? (
                       <>
-                        <p className="text-rose-300 text-xl font-black leading-none">未建立商戶頁面</p>
+                        <p className="text-rose-300 text-xl font-black leading-snug">未建立的高德地圖商戶頁面</p>
                         <span className="inline-block text-[11px] font-bold px-2 py-0.5 rounded-md bg-rose-900/60 text-rose-300 border border-rose-700/50">
                           ❌ 內地客源曝光空白
                         </span>
