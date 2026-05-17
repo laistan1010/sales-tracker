@@ -113,7 +113,7 @@ export function ReviewSection({
     if (issueLines) lines.push(issueLines);
     lines.push(
       "",
-      "放任以上數碼營銷漏洞，預計每月最多損失 20% 新客流！" + FEAR,
+      "根據大數據分析，未經優化的商戶檔案預計將導致高達 15% 至 20% 顧客流失。" + FEAR,
       "",
       CHECK + " 好消息：我們有即時解決方案，可以幫你提升業績！",
       "歡迎覆機傾一傾，今日行動、免費評估！" + FLEX
@@ -126,12 +126,12 @@ export function ReviewSection({
   const ratingNum   = parseFloat(rating);
   const ratingValid = rating !== "" && !isNaN(ratingNum);
   const ratingTier  =
-    ratingNum >= 4.5 ? "good" : ratingNum >= 4.0 ? "warn" : "danger";
+    ratingNum >= 4.2 ? "good" : ratingNum >= 3.7 ? "warn" : "danger";
   const tierLabel   = ratingTier === "good"
-    ? "✅ 優秀"
+    ? "✅ 表現優異"
     : ratingTier === "warn"
-    ? "⚠️ 注意"
-    : "🔴 危險";
+    ? "⚠️ 表現平穩，具備優化潛力"
+    : "🔴 急需改善";
   const tierChipCls = {
     good:   "bg-green-50  border-green-300  text-green-700  dark:bg-green-950/60  dark:border-green-700  dark:text-green-400",
     warn:   "bg-yellow-50 border-yellow-300 text-yellow-700 dark:bg-yellow-950/60 dark:border-yellow-700 dark:text-yellow-400",
@@ -160,9 +160,9 @@ export function ReviewSection({
     reportShop:  "商戸名稱",
     reportGMaps: "Google Maps 評分",
     issueCount:  (n: number) => "發現 " + n + " 個數碼營銷漏洞",
-    warning:     "⩽ 危險！放任以上數碼營銷漏洞，預計將導致高達",
+    warning:     "根據大數據分析，未經優化的商戶檔案預計將導致高達",
     warningPct:  "15% – 20%",
-    warningEnd:  "的潛在食客流失，轉投隣隆競爭對手！",
+    warningEnd:  "顧客流失。",
     solTitle:    "我們的解決方案",
     solBody:     "專業數碼營銷提升服務 — 優化 Google Maps 評分管理、統一網上資訊、建立社群平台、打造吸引餐牌相片，全面堪塞以上漏洞。",
     waBtn:       "💬 一鍵分享報告至 WhatsApp",
