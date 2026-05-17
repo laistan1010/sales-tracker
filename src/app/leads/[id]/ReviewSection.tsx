@@ -318,59 +318,71 @@ export function ReviewSection({
             <p className="text-zinc-500 text-xs mb-0.5">{S.reportShop}</p>
             <h3 className="text-white text-xl font-black">{storeName}</h3>
 
-            {/* Rating grid — show 1 or 2 columns depending on what's filled */}
+            {/* Rating grid — each engine gets its own sub-card */}
             {(ratingValid || gaodeShowInReport) && (
               <div className={cn(
-                "mt-3 grid gap-4",
+                "mt-4 grid gap-3",
                 ratingValid && gaodeShowInReport ? "grid-cols-2" : "grid-cols-1"
               )}>
-                {/* Google Maps rating */}
+                {/* Google Maps sub-card */}
                 {ratingValid && (
-                  <div className="space-y-1">
-                    <p className="text-zinc-500 text-xs">{S.reportGMaps}</p>
+                  <div className="rounded-xl bg-white/5 border border-white/10 p-3 space-y-1.5">
+                    <p className="text-zinc-400 text-[11px] font-medium">{S.reportGMaps}</p>
                     <div className="flex items-end gap-2 flex-wrap">
-                      <span className={cn("text-5xl font-black tabular-nums leading-none", bigNumCls)}>
+                      <span className={cn("text-4xl font-black tabular-nums leading-none", bigNumCls)}>
                         {rating}
                       </span>
-                      <span className="text-zinc-500 text-sm mb-1">/ 5.0</span>
-                      <span className={cn(
-                        "mb-1 text-[11px] font-bold px-2 py-0.5 rounded-full",
-                        ratingTier === "good"   ? "bg-green-700  text-green-200"  :
-                        ratingTier === "warn"   ? "bg-yellow-700 text-yellow-200" :
-                                                 "bg-red-700    text-red-200"
-                      )}>
-                        {tierLabel}
-                      </span>
+                      <span className="text-zinc-500 text-sm mb-0.5">/ 5.0</span>
                     </div>
+                    <span className={cn(
+                      "inline-block text-[11px] font-bold px-2 py-0.5 rounded-md border",
+                      ratingTier === "good"   ? "bg-green-900/60  text-green-300  border-green-700/50"  :
+                      ratingTier === "warn"   ? "bg-yellow-900/60 text-yellow-300 border-yellow-700/50" :
+                                               "bg-red-900/60    text-red-300    border-red-700/50"
+                    )}>
+                      {tierLabel}
+                    </span>
                   </div>
                 )}
 
-                {/* 高德地圖 rating */}
+                {/* Amap 高德地圖 sub-card */}
                 {gaodeShowInReport && (
-                  <div className="space-y-1">
-                    <p className="text-zinc-500 text-xs">{S.reportGaode}</p>
+                  <div className={cn(
+                    "rounded-xl border p-3 space-y-1.5",
+                    gaodeUnregistered
+                      ? "bg-rose-950/30 border-rose-800/50"
+                      : "bg-white/5 border-white/10"
+                  )}>
+                    <p className={cn(
+                      "text-[11px] font-medium",
+                      gaodeUnregistered ? "text-rose-400" : "text-zinc-400"
+                    )}>
+                      {S.reportGaode}
+                    </p>
                     {gaodeUnregistered ? (
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-zinc-300 text-xl font-bold leading-none">未建立商戶頁面</span>
-                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-zinc-700 text-zinc-300">
-                          🔴 急需建立
+                      <>
+                        <p className="text-rose-300 text-xl font-black leading-none">未建立商戶頁面</p>
+                        <span className="inline-block text-[11px] font-bold px-2 py-0.5 rounded-md bg-rose-900/60 text-rose-300 border border-rose-700/50">
+                          ❌ 內地客源曝光空白
                         </span>
-                      </div>
+                      </>
                     ) : (
-                      <div className="flex items-end gap-2 flex-wrap">
-                        <span className={cn("text-5xl font-black tabular-nums leading-none", gaodeBigNumCls)}>
-                          {gaodeRating}
-                        </span>
-                        <span className="text-zinc-500 text-sm mb-1">/ 5.0</span>
+                      <>
+                        <div className="flex items-end gap-2 flex-wrap">
+                          <span className={cn("text-4xl font-black tabular-nums leading-none", gaodeBigNumCls)}>
+                            {gaodeRating}
+                          </span>
+                          <span className="text-zinc-500 text-sm mb-0.5">/ 5.0</span>
+                        </div>
                         <span className={cn(
-                          "mb-1 text-[11px] font-bold px-2 py-0.5 rounded-full",
-                          gaodeTier === "good"   ? "bg-green-700  text-green-200"  :
-                          gaodeTier === "warn"   ? "bg-yellow-700 text-yellow-200" :
-                                                   "bg-red-700    text-red-200"
+                          "inline-block text-[11px] font-bold px-2 py-0.5 rounded-md border",
+                          gaodeTier === "good"   ? "bg-green-900/60  text-green-300  border-green-700/50"  :
+                          gaodeTier === "warn"   ? "bg-yellow-900/60 text-yellow-300 border-yellow-700/50" :
+                                                   "bg-red-900/60    text-red-300    border-red-700/50"
                         )}>
                           {gaodeTierLabel}
                         </span>
-                      </div>
+                      </>
                     )}
                   </div>
                 )}
