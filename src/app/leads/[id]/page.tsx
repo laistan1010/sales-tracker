@@ -146,6 +146,7 @@ export default async function LeadDetailPage({ params }: PageProps) {
         leadId={lead.id}
         storeName={lead.storeName}
         initialRating={lead.reviewRating}
+        initialGaodeRating={lead.gaodeRating}
         initialIssues={lead.reviewIssues}
         initialNotes={lead.reviewNotes}
       />

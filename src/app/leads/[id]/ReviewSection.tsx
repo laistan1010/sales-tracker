@@ -45,26 +45,29 @@ const ISSUE_LABELS: Record<string, string> = {
 };
 
 interface Props {
-  leadId:        string;
-  storeName:     string;
-  initialRating: string | null;
-  initialIssues: string | null;
-  initialNotes:  string | null;
+  leadId:             string;
+  storeName:          string;
+  initialRating:      string | null;
+  initialGaodeRating: string | null;
+  initialIssues:      string | null;
+  initialNotes:       string | null;
 }
 
 export function ReviewSection({
   leadId,
   storeName,
   initialRating,
+  initialGaodeRating,
   initialIssues,
   initialNotes,
 }: Props) {
   const [rating,         setRating]         = useState(initialRating ?? "");
+  const [gaodeRating,    setGaodeRating]    = useState(initialGaodeRating ?? "");
   const [selectedIssues, setSelectedIssues] = useState<string[]>(
     initialIssues ? initialIssues.split(",").filter(Boolean) : []
   );
   const [notes,      setNotes]      = useState(initialNotes ?? "");
-  const [showReport, setShowReport] = useState(!!(initialRating || initialIssues));
+  const [showReport, setShowReport] = useState(!!(initialRating || initialGaodeRating || initialIssues));
 
   const boundAction = updateLeadReview.bind(null, leadId);
   const [state, formAction, isPending] = useActionState(boundAction, {});
@@ -96,8 +99,15 @@ export function ReviewSection({
 
     const GU  = "顧"; // U+9867 gu3 (as in consultant)
 
+    const LOCPIN = "\u{1F4CD}"; // 📍
+
     const ratingLine = rating
       ? CHART + " Google Maps 評分：" + rating + " / 5.0 分（行業平均 4.3 分）"
+      : "";
+    const gaodeRatingLine = gaodeValid
+      ? LOCPIN + " 高德地圖評分：" + gaodeRating + " / 5.0 分（內地旅客主要參考）"
+      : gaodeUnregistered
+      ? LOCPIN + " 高德地圖：尚未建檔（內地旅客更難搜尋）"
       : "";
     const issueLines = selectedIssues
       .map(c => WARN + " " + ISSUE_LABELS[c])
@@ -109,8 +119,9 @@ export function ReviewSection({
       "剛剛為「" + storeName + "」做" + ZO + "數碼營銷健康審查，發現以下數碼營銷漏洞：",
       "",
     ];
-    if (ratingLine) lines.push(ratingLine);
-    if (issueLines) lines.push(issueLines);
+    if (ratingLine)      lines.push(ratingLine);
+    if (gaodeRatingLine) lines.push(gaodeRatingLine);
+    if (issueLines)      lines.push(issueLines);
     lines.push(
       "",
       "根據大數據分析，未經優化的商戶檔案預計將導致高達 15% 至 20% 顧客流失。" + FEAR,
@@ -143,7 +154,17 @@ export function ReviewSection({
     danger: "text-red-400",
   }[ratingTier];
 
-  const hasData = ratingValid || selectedIssues.length > 0;
+  const gaodeNum          = parseFloat(gaodeRating);
+  const gaodeValid        = gaodeRating !== "" && gaodeRating !== "未建檔" && !isNaN(gaodeNum);
+  const gaodeUnregistered = gaodeRating === "未建檔";
+  const gaodeShowInReport = gaodeValid || gaodeUnregistered;
+  const gaodeTier         = gaodeNum >= 4.2 ? "good" : gaodeNum >= 3.7 ? "warn" : "danger";
+  const gaodeBigNumCls    = { good: "text-green-400", warn: "text-yellow-400", danger: "text-red-400" }[gaodeTier];
+  const gaodeTierLabel    =
+    gaodeTier === "good"   ? "✅ 表現優異" :
+    gaodeTier === "warn"   ? "⚠️ 具備潛力" : "🔴 急需改善";
+
+  const hasData = ratingValid || gaodeShowInReport || selectedIssues.length > 0;
 
   // ── Display strings (rendered by browser, encoding-safe in JSX) ─────
   const S = {
@@ -158,7 +179,8 @@ export function ReviewSection({
     ratingSlash: "/ 5.0",
     reportBadge: "數碼營銷健康審查報告",
     reportShop:  "商戸名稱",
-    reportGMaps: "Google Maps 評分",
+    reportGMaps:  "Google Maps 評分",
+    reportGaode:  "高德地圖評分（內地旅客）",
     issueCount:  (n: number) => "發現 " + n + " 個數碼營銷漏洞",
     warning:     "根據大數據分析，未經優化的商戶檔案預計將導致高達",
     warningPct:  "15% – 20%",
@@ -176,24 +198,59 @@ export function ReviewSection({
       <form action={formAction} className="rounded-2xl border bg-card p-4 space-y-4">
         <input type="hidden" name="reviewIssues" value={selectedIssues.join(",")} />
 
-        {/* Google Maps rating */}
-        <div className="space-y-1.5">
-          <Label>{S.labelRating}</Label>
-          <div className="flex items-center gap-2">
-            <Input
-              name="reviewRating"
-              value={rating}
-              onChange={e => setRating(e.target.value)}
-              placeholder="3.5"
-              className="max-w-[110px]"
-              inputMode="decimal"
-            />
-            <span className="text-sm text-muted-foreground">{S.ratingSlash}</span>
-            {ratingValid && (
-              <span className={cn("text-xs font-bold px-2 py-0.5 rounded-full border", tierChipCls)}>
-                {tierLabel}
-              </span>
-            )}
+        {/* 雙引擎評分 */}
+        <div className="grid grid-cols-2 gap-4">
+          {/* Google Maps rating */}
+          <div className="space-y-1.5">
+            <Label className="flex items-center gap-1.5">
+              🗺️ {S.labelRating}
+            </Label>
+            <div className="flex items-center gap-2">
+              <Input
+                name="reviewRating"
+                value={rating}
+                onChange={e => setRating(e.target.value)}
+                placeholder="3.5"
+                className="max-w-[90px]"
+                inputMode="decimal"
+              />
+              <span className="text-sm text-muted-foreground">{S.ratingSlash}</span>
+              {ratingValid && (
+                <span className={cn("text-xs font-bold px-2 py-0.5 rounded-full border", tierChipCls)}>
+                  {tierLabel}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* 高德地圖 rating */}
+          <div className="space-y-1.5">
+            <Label className="flex items-center gap-1.5">
+              📍 高德地圖評分（內地旅客）
+            </Label>
+            <div className="flex items-center gap-2">
+              <Input
+                name="gaodeRating"
+                value={gaodeRating}
+                onChange={e => setGaodeRating(e.target.value)}
+                placeholder="未建檔"
+                className="max-w-[90px]"
+                inputMode="decimal"
+              />
+              <span className="text-sm text-muted-foreground">/ 5.0</span>
+              {gaodeRating && gaodeRating !== "未建檔" && !isNaN(parseFloat(gaodeRating)) && (
+                <span className={cn(
+                  "text-xs font-bold px-2 py-0.5 rounded-full border",
+                  parseFloat(gaodeRating) >= 4.2
+                    ? "bg-green-50 border-green-300 text-green-700"
+                    : parseFloat(gaodeRating) >= 3.7
+                    ? "bg-yellow-50 border-yellow-300 text-yellow-700"
+                    : "bg-red-50 border-red-300 text-red-700"
+                )}>
+                  {parseFloat(gaodeRating) >= 4.2 ? "✅ 表現優異" : parseFloat(gaodeRating) >= 3.7 ? "⚠️ 具備潛力" : "🔴 急需改善"}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -260,23 +317,62 @@ export function ReviewSection({
             <p className="text-zinc-500 text-xs mb-0.5">{S.reportShop}</p>
             <h3 className="text-white text-xl font-black">{storeName}</h3>
 
-            {ratingValid && (
-              <div className="mt-3 space-y-1">
-                <p className="text-zinc-500 text-xs">{S.reportGMaps}</p>
-                <div className="flex items-end gap-2">
-                  <span className={cn("text-5xl font-black tabular-nums leading-none", bigNumCls)}>
-                    {rating}
-                  </span>
-                  <span className="text-zinc-500 text-sm mb-1">/ 5.0</span>
-                  <span className={cn(
-                    "mb-1 text-[11px] font-bold px-2 py-0.5 rounded-full",
-                    ratingTier === "good"   ? "bg-green-700  text-green-200"  :
-                    ratingTier === "warn"   ? "bg-yellow-700 text-yellow-200" :
-                                             "bg-red-700    text-red-200"
-                  )}>
-                    {tierLabel}
-                  </span>
-                </div>
+            {/* Rating grid — show 1 or 2 columns depending on what's filled */}
+            {(ratingValid || gaodeShowInReport) && (
+              <div className={cn(
+                "mt-3 grid gap-4",
+                ratingValid && gaodeShowInReport ? "grid-cols-2" : "grid-cols-1"
+              )}>
+                {/* Google Maps rating */}
+                {ratingValid && (
+                  <div className="space-y-1">
+                    <p className="text-zinc-500 text-xs">{S.reportGMaps}</p>
+                    <div className="flex items-end gap-2 flex-wrap">
+                      <span className={cn("text-5xl font-black tabular-nums leading-none", bigNumCls)}>
+                        {rating}
+                      </span>
+                      <span className="text-zinc-500 text-sm mb-1">/ 5.0</span>
+                      <span className={cn(
+                        "mb-1 text-[11px] font-bold px-2 py-0.5 rounded-full",
+                        ratingTier === "good"   ? "bg-green-700  text-green-200"  :
+                        ratingTier === "warn"   ? "bg-yellow-700 text-yellow-200" :
+                                                 "bg-red-700    text-red-200"
+                      )}>
+                        {tierLabel}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* 高德地圖 rating */}
+                {gaodeShowInReport && (
+                  <div className="space-y-1">
+                    <p className="text-zinc-500 text-xs">高德地圖評分（內地旅客）</p>
+                    {gaodeUnregistered ? (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-zinc-300 text-xl font-bold leading-none">尚未建檔</span>
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-zinc-700 text-zinc-300">
+                          🔴 急需建立
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-end gap-2 flex-wrap">
+                        <span className={cn("text-5xl font-black tabular-nums leading-none", gaodeBigNumCls)}>
+                          {gaodeRating}
+                        </span>
+                        <span className="text-zinc-500 text-sm mb-1">/ 5.0</span>
+                        <span className={cn(
+                          "mb-1 text-[11px] font-bold px-2 py-0.5 rounded-full",
+                          gaodeTier === "good"   ? "bg-green-700  text-green-200"  :
+                          gaodeTier === "warn"   ? "bg-yellow-700 text-yellow-200" :
+                                                   "bg-red-700    text-red-200"
+                        )}>
+                          {gaodeTierLabel}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -54,6 +54,7 @@ model Lead {
   openRiceUrl   String?
   assignedToId  String?
   reviewRating  String?
+  gaodeRating   String?
   reviewIssues  String?
   reviewNotes   String?
   assignedTo    User?      @relation(fields: [assignedToId], references: [id])

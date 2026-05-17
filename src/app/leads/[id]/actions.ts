@@ -43,12 +43,13 @@ export async function updateLeadReview(
   formData: FormData
 ): Promise<ActionState> {
   const reviewRating = (formData.get("reviewRating") as string | null)?.trim() || null;
+  const gaodeRating  = (formData.get("gaodeRating")  as string | null)?.trim() || null;
   const reviewIssues = (formData.get("reviewIssues") as string | null)?.trim() || null;
   const reviewNotes  = (formData.get("reviewNotes")  as string | null)?.trim() || null;
 
   await prisma.lead.update({
     where: { id: leadId },
-    data: { reviewRating, reviewIssues, reviewNotes },
+    data: { reviewRating, gaodeRating, reviewIssues, reviewNotes },
   });
 
   revalidatePath(`/leads/${leadId}`);
