@@ -104,7 +104,7 @@ export function ReviewSection({
       .join("\n");
 
     const lines: string[] = [
-      "老細／經理你好！我係剛才拜訪" + GEI + "數碼" + GU + "問 " + SMILE,
+      "老細／經理你好！我係剛才拜訪" + GEI + "數碼營銷" + GU + "問 " + SMILE,
       "",
       "剛剛為「" + storeName + "」做" + ZO + "數碼營銷健康審查，發現以下數碼營銷漏洞：",
       "",
