@@ -1,139 +1,152 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import type { LeadStatus } from "@/generated/prisma/enums";
-import { STATUS_LABELS, ALL_STATUSES } from "@/lib/constants";
-import { cn } from "@/lib/utils";
 import { updateLeadStatus } from "./actions";
 
 interface Props {
-  leadId:           string;
-  currentStatus:    LeadStatus;
-  objectionNotes:   string | null;
+  leadId:         string;
+  currentStatus:  LeadStatus;
+  objectionNotes: string | null;
 }
 
-const PIPELINE_STAGES: LeadStatus[] = [
-  "LEAD",
-  "CONTACTED",
-  "DEMO",
-  "OBJECTION",
-  "CLOSED_WON",
-  "CLOSED_LOST",
+const STAGES: {
+  id:          LeadStatus;
+  label:       string;
+  activeColor: string;
+  dotColor:    string;
+}[] = [
+  { id: "LEAD",        label: "潛在客戶",  activeColor: "bg-gray-700   text-white border-gray-700",   dotColor: "bg-gray-400"    },
+  { id: "CONTACTED",   label: "已接觸",    activeColor: "bg-blue-600   text-white border-blue-600",   dotColor: "bg-blue-400"    },
+  { id: "DEMO",        label: "提案中",    activeColor: "bg-purple-600 text-white border-purple-600", dotColor: "bg-purple-400"  },
+  { id: "OBJECTION",   label: "處理反對",  activeColor: "bg-amber-500  text-white border-amber-500",  dotColor: "bg-amber-400"   },
+  { id: "CLOSED_WON",  label: "成交 🎉",   activeColor: "bg-emerald-600 text-white border-emerald-600", dotColor: "bg-emerald-400" },
+  { id: "CLOSED_LOST", label: "失敗 ❌",   activeColor: "bg-rose-600   text-white border-rose-600",   dotColor: "bg-rose-400"    },
 ];
 
-const STAGE_COLORS: Record<LeadStatus, {
-  active:   string;
-  inactive: string;
-  dot:      string;
-}> = {
-  LEAD:        { active: "bg-gray-700   text-white border-gray-700",         inactive: "border-gray-300  text-gray-400  hover:border-gray-500  hover:text-gray-600",  dot: "bg-gray-500" },
-  CONTACTED:   { active: "bg-blue-600   text-white border-blue-600",         inactive: "border-blue-200  text-blue-400  hover:border-blue-500  hover:text-blue-600",  dot: "bg-blue-500" },
-  DEMO:        { active: "bg-purple-600 text-white border-purple-600",       inactive: "border-purple-200 text-purple-400 hover:border-purple-500 hover:text-purple-600", dot: "bg-purple-500" },
-  OBJECTION:   { active: "bg-yellow-500 text-white border-yellow-500",       inactive: "border-yellow-200 text-yellow-500 hover:border-yellow-400 hover:text-yellow-600", dot: "bg-yellow-500" },
-  CLOSED_WON:  { active: "bg-green-600  text-white border-green-600",        inactive: "border-green-200 text-green-400 hover:border-green-500 hover:text-green-600",   dot: "bg-green-500" },
-  CLOSED_LOST: { active: "bg-red-600    text-white border-red-600",          inactive: "border-red-200   text-red-400   hover:border-red-500   hover:text-red-600",     dot: "bg-red-500" },
+const STAGE_INDEX: Record<LeadStatus, number> = {
+  LEAD: 0, CONTACTED: 1, DEMO: 2, OBJECTION: 3, CLOSED_WON: 4, CLOSED_LOST: 5,
 };
+
+function getProgressBar(status: LeadStatus): { pct: number; color: string } {
+  switch (status) {
+    case "LEAD":        return { pct: 16,  color: "bg-emerald-500" };
+    case "CONTACTED":   return { pct: 33,  color: "bg-emerald-500" };
+    case "DEMO":        return { pct: 50,  color: "bg-emerald-500" };
+    case "OBJECTION":   return { pct: 66,  color: "bg-emerald-500" };
+    case "CLOSED_WON":  return { pct: 100, color: "bg-emerald-500" };
+    case "CLOSED_LOST": return { pct: 100, color: "bg-rose-500"    };
+  }
+}
 
 export function PipelineTracker({ leadId, currentStatus, objectionNotes }: Props) {
   const [optimisticStatus, setOptimisticStatus] = useState<LeadStatus>(currentStatus);
-  const [notes, setNotes] = useState(objectionNotes ?? "");
-  const [isPending, startTransition] = useTransition();
+  const [notes,            setNotes]            = useState(objectionNotes ?? "");
+  const [isSavingNotes,    setIsSavingNotes]    = useState(false);
+  const [isPending,        startTransition]     = useTransition();
 
-  const currentIdx = PIPELINE_STAGES.indexOf(optimisticStatus);
-  const showNotes  = optimisticStatus === "OBJECTION" || optimisticStatus === "CLOSED_LOST";
+  const { pct, color } = getProgressBar(optimisticStatus);
+  const showNotes = optimisticStatus === "OBJECTION" || optimisticStatus === "CLOSED_LOST";
 
   function handleStageClick(newStatus: LeadStatus) {
     if (newStatus === optimisticStatus || isPending) return;
     const prev = optimisticStatus;
     setOptimisticStatus(newStatus);
     startTransition(async () => {
-      await updateLeadStatus(leadId, prev, newStatus, showNotes ? notes : undefined);
+      const result = await updateLeadStatus(leadId, prev, newStatus);
+      if (!result.success) {
+        setOptimisticStatus(prev);
+        toast.error("更新失敗，請重試");
+      } else {
+        toast.success("Pipeline 已更新");
+      }
     });
   }
 
-  function handleNotesBlur() {
-    startTransition(async () => {
-      await updateLeadStatus(leadId, optimisticStatus, optimisticStatus, notes);
-    });
+  async function handleSaveNotes() {
+    setIsSavingNotes(true);
+    const result = await updateLeadStatus(leadId, optimisticStatus, optimisticStatus, notes);
+    setIsSavingNotes(false);
+    if (result.success) {
+      toast.success("原因已儲存");
+    } else {
+      toast.error("儲存失敗，請重試");
+    }
   }
 
   return (
-    <section className="rounded-2xl border bg-card p-4 space-y-3">
+    <div className="w-full bg-card border rounded-2xl p-6 shadow-sm space-y-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+        <h3 className="text-xs font-bold tracking-wider uppercase text-muted-foreground">
           Sales Pipeline
-        </h2>
+        </h3>
         {isPending && (
-          <span className="text-xs text-muted-foreground animate-pulse">儲存中…</span>
+          <div className="animate-spin h-4 w-4 border-2 border-emerald-500 border-t-transparent rounded-full" />
         )}
       </div>
 
       {/* Stage buttons */}
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-        {PIPELINE_STAGES.map((stage, idx) => {
-          const meta    = STATUS_LABELS[stage];
-          const colors  = STAGE_COLORS[stage];
-          const isActive = stage === optimisticStatus;
-          const isPast   = idx < currentIdx;
-
+      <div className="relative grid grid-cols-2 md:grid-cols-6 gap-2">
+        {STAGES.map((stage) => {
+          const isActive = optimisticStatus === stage.id;
+          const isPast   = STAGE_INDEX[optimisticStatus] > STAGE_INDEX[stage.id];
           return (
             <button
-              key={stage}
-              onClick={() => handleStageClick(stage)}
+              key={stage.id}
+              type="button"
               disabled={isPending}
-              className={cn(
-                "flex flex-col items-center gap-1 rounded-xl border px-2 py-2.5 text-center transition-all",
+              onClick={() => handleStageClick(stage.id)}
+              className={[
+                "py-4 px-2 text-sm font-medium rounded-xl border transition-all duration-200 text-center",
                 isActive
-                  ? colors.active + " shadow-sm"
+                  ? stage.activeColor + " shadow-sm font-semibold scale-[1.02]"
                   : isPast
-                    ? "border-transparent bg-muted/50 text-muted-foreground opacity-60 hover:opacity-100 " + colors.inactive
-                    : colors.inactive + " bg-background"
-              )}
+                    ? "bg-muted/40 text-muted-foreground border-border opacity-60 hover:opacity-90"
+                    : "bg-muted/20 text-muted-foreground border-border hover:bg-muted/50 hover:border-foreground/20",
+              ].join(" ")}
             >
-              <span className="text-base leading-none">{meta.icon}</span>
-              <span className={cn("text-[10px] font-semibold leading-tight", isActive ? "text-white" : "")}>
-                {meta.zh}
-              </span>
-              {isActive && (
-                <span className={cn("h-1.5 w-1.5 rounded-full", colors.dot, "opacity-80")} />
-              )}
+              {stage.label}
             </button>
           );
         })}
       </div>
 
       {/* Progress bar */}
-      <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+      <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
         <div
-          className={cn(
-            "h-full rounded-full transition-all duration-500",
-            optimisticStatus === "CLOSED_WON"  ? "bg-green-500" :
-            optimisticStatus === "CLOSED_LOST" ? "bg-red-500"   : "bg-blue-500"
-          )}
-          style={{ width: ((currentIdx + 1) / PIPELINE_STAGES.length * 100) + "%" }}
+          className={`h-full rounded-full transition-all duration-500 ease-out ${color}`}
+          style={{ width: pct + "%" }}
         />
       </div>
 
       {/* Objection / Lost notes */}
       {showNotes && (
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">
-            {optimisticStatus === "OBJECTION" ? "反對意見 / 客戶顧慮" : "失敗原因"}
+        <div className="pt-4 border-t border-dashed border-border space-y-2">
+          <label className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+            <span className={`h-2 w-2 rounded-full shrink-0 ${optimisticStatus === "CLOSED_LOST" ? "bg-rose-500" : "bg-amber-500"}`} />
+            {optimisticStatus === "CLOSED_LOST" ? "失敗原因" : "客戶反對意見 / 痛點"}
           </label>
-          <textarea
-            rows={2}
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            onBlur={handleNotesBlur}
-            placeholder={
-              optimisticStatus === "OBJECTION"
-                ? "例：價格太貴，需要再考慮…"
-                : "例：已選用競爭對手…"
-            }
-            className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none"
-          />
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleSaveNotes()}
+              placeholder={optimisticStatus === "CLOSED_LOST" ? "例：已選用競爭對手…" : "例：嫌貴、需要再考慮…"}
+              className="flex-1 px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring transition-all"
+            />
+            <button
+              type="button"
+              disabled={isSavingNotes}
+              onClick={handleSaveNotes}
+              className="px-4 py-2 bg-foreground hover:bg-foreground/90 text-background text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+            >
+              {isSavingNotes ? "儲存中…" : "儲存"}
+            </button>
+          </div>
         </div>
       )}
-    </section>
+    </div>
   );
 }
