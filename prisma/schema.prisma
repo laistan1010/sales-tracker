@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  SALES
+}
+
+enum Industry {
+  F_AND_B
+  MEDICAL_BEAUTY
+  BEAUTY
+  FOOT
+}
+
+enum LeadStatus {
+  LEAD
+  CONTACTED
+  DEMO
+  OBJECTION
+  CLOSED_WON
+  CLOSED_LOST
+}
+
+enum ActivityType {
+  WALK_IN
+  PHONE
+  WHATSAPP
+  PIPELINE
+}
+
+model User {
+  id    String @id @default(cuid())
+  name  String
+  role  Role
+  leads Lead[]
+}
+
+model Lead {
+  id            String     @id @default(cuid())
+  storeName     String
+  industry      Industry
+  district      String     @default("待補填")
+  address       String?
+  status        LeadStatus @default(LEAD)
+  objectionNotes String?
+  googleMapsUrl String?
+  openRiceUrl   String?
+  assignedToId  String?
+  reviewRating  String?
+  reviewIssues  String?
+  reviewNotes   String?
+  assignedTo    User?      @relation(fields: [assignedToId], references: [id])
+  contacts      Contact[]
+  activities    Activity[]
+}
+
+model Contact {
+  id     String  @id @default(cuid())
+  name   String
+  title  String?
+  phone  String?
+  leadId String
+  lead   Lead    @relation(fields: [leadId], references: [id], onDelete: Cascade)
+}
+
+model Activity {
+  id        String       @id @default(cuid())
+  leadId    String
+  lead      Lead         @relation(fields: [leadId], references: [id])
+  type      ActivityType
+  notes     String
+  createdAt DateTime     @default(now())
+}
