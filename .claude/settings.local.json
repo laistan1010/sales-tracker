@@ -6,7 +6,14 @@
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
-      "Bash(git commit -m 'fix: delete AppointmentSection, exclude scripts from tsconfig *)"
+      "Bash(git commit -m 'fix: delete AppointmentSection, exclude scripts from tsconfig *)",
+      "Bash(git commit -m 'feat: add 中/EN language toggle to audit report card *)",
+      "Bash(gh pr create --title 'feat: Task system + Audit report EN toggle' --body ' *)",
+      "Bash(git commit -m 'fix: remove redundant '\\\\''Gaode'\\\\'' from EN Amap label *)",
+      "Bash(gh pr *)",
+      "Bash(git fetch *)",
+      "Bash(git commit -m 'fix: treat Amap rating 0 as unregistered, update display text \\(zh+en\\) *)",
+      "Bash(git commit -m 'chore: update settings *)"
     ]
   }
 }
