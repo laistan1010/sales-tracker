@@ -137,16 +137,16 @@ export function CreateLeadModal() {
               <p className="text-sm text-destructive">{state.error}</p>
             )}
 
-            <DialogFooter className="flex-col gap-2 pt-2">
+            <div className="flex flex-col gap-2 pt-2">
               <Button type="submit" disabled={isPending} className="w-full h-14 text-base font-bold bg-green-600 hover:bg-green-500 active:bg-green-700 text-white">
                 {isPending ? "建立中…" : "立即建立"}
               </Button>
               <DialogClose asChild>
-                <Button type="button" variant="outline" className="w-full h-14 text-base font-bold border-red-400 text-red-500 hover:bg-red-50 active:bg-red-100">
+                <Button type="button" className="w-full h-14 text-base font-bold bg-red-600 hover:bg-red-500 active:bg-red-700 text-white">
                   取消
                 </Button>
               </DialogClose>
-            </DialogFooter>
+            </div>
           </form>
         </DialogContent>
       </Dialog>

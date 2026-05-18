@@ -105,7 +105,7 @@ export function QuickLog({ leadId }: { leadId: string }) {
           />
           {error && <p className="text-sm text-destructive">{error}</p>}
 
-          <DialogFooter className="flex-col gap-2 pt-2">
+          <div className="flex flex-col gap-2 pt-2">
             <Button
               onClick={handleSave}
               disabled={isPending}
@@ -114,11 +114,11 @@ export function QuickLog({ leadId }: { leadId: string }) {
               {isPending ? "儲存中…" : "儲存記錄"}
             </Button>
             <DialogClose asChild>
-              <Button variant="outline" className="w-full h-14 text-base font-bold border-red-400 text-red-500 hover:bg-red-50 active:bg-red-100">
+              <Button className="w-full h-14 text-base font-bold bg-red-600 hover:bg-red-500 active:bg-red-700 text-white">
                 取消
               </Button>
             </DialogClose>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </>
