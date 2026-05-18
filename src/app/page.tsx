@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { Badge } from "@/components/ui/badge";
-import { STATUS_LABELS } from "@/lib/constants";
+import { STATUS_LABELS, TASK_TYPE_META } from "@/lib/constants";
 import type { LeadStatus } from "@/generated/prisma/enums";
 import Link from "next/link";
 import { CalendarDays, Clock } from "lucide-react";
@@ -14,12 +14,6 @@ function getHKDateStrings() {
   const hour     = nowHK.getUTCHours();
   const greeting = hour < 12 ? "早晨" : hour < 18 ? "午安" : "晚上好";
   return { todayStr, in7Days, greeting };
-}
-
-function formatApptDate(d: string, todayStr: string) {
-  if (d === todayStr) return "今日";
-  const [, m, day] = d.split("-");
-  return `${parseInt(m)}月${parseInt(day)}日`;
 }
 
 function formatApptTime(t: string | null) {
@@ -58,62 +52,54 @@ export default async function HomePage() {
     { label: "潛在客戶",    value: (byStatus["LEAD"] ?? 0) + (byStatus["CONTACTED"] ?? 0),             status: "LEAD"         as LeadStatus },
   ];
 
-  // ── Upcoming appointments (today + 7 days) ─────────────────────────────
-  const upcomingLeads = await prisma.lead.findMany({
+  // ── Upcoming tasks (today + 7 days) ────────────────────────────────────
+  const upcomingTasks = await prisma.task.findMany({
     where: {
-      ...baseWhere,
-      appointmentDate: { gte: todayStr, lte: in7Days },
+      date: { gte: todayStr, lte: in7Days },
+      lead: baseWhere,
     },
-    select: {
-      id:              true,
-      storeName:       true,
-      district:        true,
-      appointmentDate: true,
-      appointmentTime: true,
-      appointmentNotes: true,
+    include: {
+      lead: { select: { id: true, storeName: true, district: true } },
     },
-    orderBy: [
-      { appointmentDate: "asc" },
-      { appointmentTime: "asc" },
-    ],
+    orderBy: [{ date: "asc" }, { time: "asc" }],
   });
 
-  const todayAppts  = upcomingLeads.filter(l => l.appointmentDate === todayStr);
-  const futureAppts = upcomingLeads.filter(l => l.appointmentDate !== todayStr);
+  const todayTasks  = upcomingTasks.filter(t => t.date === todayStr);
+  const futureTasks = upcomingTasks.filter(t => t.date !== todayStr);
 
   return (
     <div className="space-y-6">
 
       {/* ── Today banner ──────────────────────────────────────────────── */}
-      {todayAppts.length > 0 ? (
+      {todayTasks.length > 0 ? (
         <div className="rounded-2xl bg-gradient-to-r from-amber-500 to-orange-400 p-4 shadow-sm text-white flex items-center justify-between gap-3">
           <div>
             <h3 className="font-bold text-lg">👋 {greeting}！{name}</h3>
             <p className="text-sm opacity-90 mt-0.5">
               你今日有{" "}
-              <strong className="text-white">{todayAppts.length}</strong>{" "}
-              個會面行程，請記得帶齊資料！
+              <strong className="text-white">{todayTasks.length}</strong>{" "}
+              個工作項目待完成！
             </p>
             <div className="mt-2 space-y-1">
-              {todayAppts.map(l => (
+              {todayTasks.map(t => (
                 <Link
-                  key={l.id}
-                  href={`/leads/${l.id}`}
+                  key={t.id}
+                  href={`/leads/${t.lead.id}`}
                   className="flex items-center gap-2 text-sm font-semibold text-white/90 hover:text-white"
                 >
-                  <span>→</span>
-                  <span>{l.storeName}</span>
-                  <span className="font-normal opacity-75">{l.district}</span>
-                  {l.appointmentTime && (
+                  <span>{TASK_TYPE_META[t.type].icon}</span>
+                  <span>{t.lead.storeName}</span>
+                  <span className="font-normal opacity-75">{t.lead.district}</span>
+                  {t.time && (
                     <span className="font-normal opacity-75">
-                      · {formatApptTime(l.appointmentTime)}
+                      · {formatApptTime(t.time)}
                     </span>
                   )}
                 </Link>
               ))}
             </div>
           </div>
-          <div className="shrink-0 rounded-full bg-white/20 p-3 text-2xl">📅</div>
+          <div className="shrink-0 rounded-full bg-white/20 p-3 text-2xl">📋</div>
         </div>
       ) : (
         <div>
@@ -147,35 +133,37 @@ export default async function HomePage() {
       </div>
 
       {/* ── Upcoming 7-day schedule ───────────────────────────────────── */}
-      {futureAppts.length > 0 && (
+      {futureTasks.length > 0 && (
         <section className="space-y-3">
           <h2 className="text-base font-semibold flex items-center gap-2">
             <CalendarDays className="h-4 w-4 text-muted-foreground" />
-            未來 7 日行程
+            未來 7 日工作項目
           </h2>
           <ol className="space-y-2">
-            {futureAppts.map(l => (
-              <li key={l.id}>
+            {futureTasks.map(t => (
+              <li key={t.id}>
                 <Link
-                  href={`/leads/${l.id}`}
+                  href={`/leads/${t.lead.id}`}
                   className="flex items-center gap-3 rounded-xl border bg-card px-4 py-3 hover:bg-accent transition-colors"
                 >
                   <div className="shrink-0 text-center w-10">
                     <p className="text-xs text-muted-foreground leading-none">
-                      {l.appointmentDate!.slice(5, 7)}月
+                      {t.date.slice(5, 7)}月
                     </p>
                     <p className="text-xl font-black leading-tight">
-                      {parseInt(l.appointmentDate!.slice(8, 10))}
+                      {parseInt(t.date.slice(8, 10))}
                     </p>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold truncate">{l.storeName}</p>
-                    <p className="text-xs text-muted-foreground">{l.district}</p>
+                    <p className="font-semibold truncate">{t.lead.storeName}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {TASK_TYPE_META[t.type].icon} {TASK_TYPE_META[t.type].zh} · {t.lead.district}
+                    </p>
                   </div>
-                  {l.appointmentTime && (
+                  {t.time && (
                     <div className="shrink-0 flex items-center gap-1 text-xs text-muted-foreground">
                       <Clock className="h-3 w-3" />
-                      {formatApptTime(l.appointmentTime)}
+                      {formatApptTime(t.time)}
                     </div>
                   )}
                 </Link>

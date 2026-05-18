@@ -1,4 +1,4 @@
-import type { Industry, LeadStatus, ActivityType } from "@/generated/prisma/enums";
+import type { Industry, LeadStatus, ActivityType, TaskType } from "@/generated/prisma/enums";
 
 export const INDUSTRY_LABELS: Record<Industry, { en: string; zh: string; color: string }> = {
   F_AND_B:        { en: "F&B",           zh: "飲食",   color: "bg-orange-100 text-orange-700 border-orange-200" },
@@ -21,8 +21,17 @@ export const ACTIVITY_LABELS: Record<ActivityType, { en: string; zh: string; ico
   PHONE:    { en: "Phone Call",     zh: "打電話",       icon: "📞", color: "bg-blue-100 text-blue-700 border-blue-300" },
   WHATSAPP: { en: "WhatsApp",       zh: "WhatsApp",     icon: "💬", color: "bg-green-100 text-green-700 border-green-300" },
   PIPELINE: { en: "Pipeline Update", zh: "Pipeline 更新", icon: "🔄", color: "bg-violet-100 text-violet-700 border-violet-300" },
+  MEETING:  { en: "Meeting",         zh: "面談",          icon: "🤝", color: "bg-indigo-100 text-indigo-700 border-indigo-300" },
+  EMAIL:    { en: "Email",           zh: "電郵",           icon: "📧", color: "bg-sky-100 text-sky-700 border-sky-300" },
+};
+
+export const TASK_TYPE_META: Record<TaskType, { zh: string; icon: string; activityType: ActivityType }> = {
+  MEETING: { zh: "面談",     icon: "🤝", activityType: "MEETING" },
+  CALL:    { zh: "跟進電話", icon: "📞", activityType: "PHONE"   },
+  EMAIL:   { zh: "電郵",     icon: "📧", activityType: "EMAIL"   },
 };
 
 export const ALL_INDUSTRIES = Object.keys(INDUSTRY_LABELS) as Industry[];
 export const ALL_STATUSES   = Object.keys(STATUS_LABELS)   as LeadStatus[];
 export const ALL_ACTIVITIES = Object.keys(ACTIVITY_LABELS) as ActivityType[];
+export const ALL_TASK_TYPES = Object.keys(TASK_TYPE_META)  as TaskType[];
