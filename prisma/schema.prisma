@@ -50,9 +50,12 @@ model Lead {
   address       String?
   status        LeadStatus @default(LEAD)
   objectionNotes String?
-  googleMapsUrl String?
-  openRiceUrl   String?
-  gaodeMapsUrl  String?
+  googleMapsUrl    String?
+  openRiceUrl      String?
+  gaodeMapsUrl     String?
+  appointmentDate  String?
+  appointmentTime  String?
+  appointmentNotes String?
   assignedToId  String?
   reviewRating  String?
   gaodeRating   String?

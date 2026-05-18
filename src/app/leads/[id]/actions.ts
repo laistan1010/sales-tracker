@@ -86,6 +86,35 @@ export async function updateLeadStatus(
   return { success: true };
 }
 
+// ── Set / Clear Appointment ──────────────────────────────────────────────
+export async function setAppointment(
+  leadId: string,
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const date  = (formData.get("date")  as string | null)?.trim() || null;
+  const time  = (formData.get("time")  as string | null)?.trim() || null;
+  const notes = (formData.get("notes") as string | null)?.trim() || null;
+  if (!date) return { error: "請選擇日期" };
+  await prisma.lead.update({
+    where: { id: leadId },
+    data: { appointmentDate: date, appointmentTime: time, appointmentNotes: notes },
+  });
+  revalidatePath(`/leads/${leadId}`);
+  revalidatePath("/");
+  return { success: true };
+}
+
+export async function clearAppointment(leadId: string): Promise<ActionState> {
+  await prisma.lead.update({
+    where: { id: leadId },
+    data: { appointmentDate: null, appointmentTime: null, appointmentNotes: null },
+  });
+  revalidatePath(`/leads/${leadId}`);
+  revalidatePath("/");
+  return { success: true };
+}
+
 // ── Delete Contact ───────────────────────────────────────────────────────
 export async function deleteContact(
   leadId: string,

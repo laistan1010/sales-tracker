@@ -7,6 +7,7 @@ import { ContactSection } from "./ContactSection";
 import { EditLeadModal } from "./EditLeadModal";
 import { ReviewSection } from "./ReviewSection";
 import { PipelineTracker } from "./PipelineTracker";
+import { AppointmentSection } from "./AppointmentSection";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, MapPin, ExternalLink } from "lucide-react";
 
@@ -153,6 +154,14 @@ export default async function LeadDetailPage({ params }: PageProps) {
 
       {/* ── Quick Log ───────────────────────────────────────────────── */}
       <QuickLog leadId={lead.id} />
+
+      {/* ── Appointment ─────────────────────────────────────────────── */}
+      <AppointmentSection
+        leadId={lead.id}
+        initialDate={lead.appointmentDate  ?? null}
+        initialTime={lead.appointmentTime  ?? null}
+        initialNotes={lead.appointmentNotes ?? null}
+      />
 
       {/* ── Digital Review ──────────────────────────────────────────── */}
       <ReviewSection
