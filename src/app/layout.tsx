@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Navbar } from "@/components/Navbar";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -28,14 +29,16 @@ export default function RootLayout({
     <html
       lang="zh-HK"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-screen flex flex-col bg-background text-foreground">
-        {/* Navbar renders itself only when a session exists */}
-        <Navbar />
-        <main className="flex-1 mx-auto w-full max-w-screen-xl px-4 py-6">
-          {children}
-        </main>
-        <Toaster position="bottom-center" richColors />
+        <ThemeProvider>
+          <Navbar />
+          <main className="flex-1 mx-auto w-full max-w-screen-xl px-4 py-6">
+            {children}
+          </main>
+          <Toaster position="bottom-center" richColors />
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -3,6 +3,7 @@ import { BarChart3, LogOut } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { auth } from "@/auth";
 import { logout } from "@/app/login/actions";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const navLinks = [
   { href: "/leads", label: "商戶" },
@@ -40,7 +41,7 @@ export async function Navbar() {
           ))}
         </nav>
 
-        {/* User info + logout pushed to the right */}
+        {/* User info + toggle + logout pushed to the right */}
         <div className="ml-auto flex items-center gap-2">
           <div className="hidden sm:flex items-center gap-2">
             <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-foreground text-background text-xs font-bold">
@@ -53,6 +54,8 @@ export async function Navbar() {
               </span>
             </div>
           </div>
+
+          <ThemeToggle />
 
           <form action={logout}>
             <button
