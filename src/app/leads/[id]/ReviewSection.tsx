@@ -155,8 +155,8 @@ export function ReviewSection({
   }[ratingTier];
 
   const gaodeNum          = parseFloat(gaodeRating);
-  // support legacy "未建檔" entries already saved in DB
-  const gaodeUnregistered = gaodeRating === "未建立" || gaodeRating === "未建檔";
+  // 0 means no profile; also support legacy "未建檔" entries
+  const gaodeUnregistered = gaodeRating === "未建立" || gaodeRating === "未建檔" || (!isNaN(gaodeNum) && gaodeNum === 0);
   const gaodeValid        = gaodeRating !== "" && !gaodeUnregistered && !isNaN(gaodeNum);
   const gaodeShowInReport = gaodeValid || gaodeUnregistered;
   const gaodeTier         = gaodeNum >= 4.2 ? "good" : gaodeNum >= 3.7 ? "warn" : "danger";
@@ -203,7 +203,7 @@ export function ReviewSection({
     warningEnd:            "customer loss.",
     solTitle:              "Our Solution",
     solBody:               "Professional digital marketing enhancement — Google Maps review management, unified online presence, social media setup, and professional menu photography to address all identified gaps.",
-    gaodeUnregistered:     "No Gaode Maps Business Profile",
+    gaodeUnregistered:     "No Amap Merchant Profile Set Up",
     gaodeUnregisteredBadge:"❌ Zero Mainland Visitor Exposure",
     issueLabels: {
       missing_info:     "Incomplete Business Info (No Hours / Phone Number)",
@@ -223,7 +223,7 @@ export function ReviewSection({
     warningEnd:            S.warningEnd,
     solTitle:              S.solTitle,
     solBody:               S.solBody,
-    gaodeUnregistered:     "未建立的高德地圖商戶頁面",
+    gaodeUnregistered:     "未設置高德地圖商戶頁面",
     gaodeUnregisteredBadge:"❌ 內地客源曝光空白",
     issueLabels:           ISSUE_LABELS as Record<string, string>,
   };
@@ -413,7 +413,7 @@ export function ReviewSection({
                     </p>
                     {gaodeUnregistered ? (
                       <>
-                        <p className="text-rose-300 text-xl font-black leading-snug">{R.gaodeUnregistered}</p>
+                        <p className="text-rose-300 text-base font-black leading-snug">{R.gaodeUnregistered}</p>
                         <span className="inline-block text-[11px] font-bold px-2 py-0.5 rounded-md bg-rose-900/60 text-rose-300 border border-rose-700/50">
                           {R.gaodeUnregisteredBadge}
                         </span>
