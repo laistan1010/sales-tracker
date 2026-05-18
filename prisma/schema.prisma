@@ -17,6 +17,7 @@ enum Industry {
   MEDICAL_BEAUTY
   BEAUTY
   FOOT
+  OTHER
 }
 
 enum LeadStatus {
