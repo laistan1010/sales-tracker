@@ -361,14 +361,14 @@ export function ReviewSection({
         <div className={cn("rounded-2xl overflow-hidden border-2 shadow-xl", C.border, C.shadow)}>
 
           {/* Header */}
-          <div className={cn("bg-gradient-to-br px-5 py-5", C.headerBg)}>
-            <div className="flex items-center justify-between mb-3">
-              <div className={cn("flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest", C.accent)}>
-                <AlertTriangle className="h-3.5 w-3.5" />
+          <div className={cn("bg-gradient-to-br px-5 py-6", C.headerBg)}>
+            <div className="flex items-center justify-between mb-4">
+              <div className={cn("flex items-center gap-2 text-sm font-bold uppercase tracking-widest", C.accent)}>
+                <AlertTriangle className="h-4 w-4" />
                 {R.reportBadge}
               </div>
               {/* Language toggle */}
-              <div className="flex rounded-lg overflow-hidden border border-white/20 text-[11px] font-bold">
+              <div className="flex rounded-lg overflow-hidden border border-white/20 text-xs font-bold">
                 <button
                   type="button"
                   onClick={() => setReportLang("zh")}
@@ -381,8 +381,8 @@ export function ReviewSection({
                 >EN</button>
               </div>
             </div>
-            <p className="text-zinc-500 text-xs mb-0.5">{R.reportShop}</p>
-            <h3 className="text-white text-xl font-black">{storeName}</h3>
+            <p className="text-zinc-500 text-sm mb-1">{R.reportShop}</p>
+            <h3 className="text-white text-2xl font-black">{storeName}</h3>
 
             {/* Rating grid — each engine gets its own sub-card */}
             {(ratingValid || gaodeShowInReport) && (
@@ -393,15 +393,15 @@ export function ReviewSection({
                 {/* Google Maps sub-card */}
                 {ratingValid && (
                   <div className="rounded-xl bg-white/5 border border-white/10 p-3 space-y-1.5">
-                    <p className="text-zinc-400 text-[11px] font-medium">{R.reportGMaps}</p>
+                    <p className="text-zinc-400 text-sm font-medium">{R.reportGMaps}</p>
                     <div className="flex items-end gap-2 flex-wrap">
-                      <span className={cn("text-4xl font-black tabular-nums leading-none", bigNumCls)}>
+                      <span className={cn("text-5xl font-black tabular-nums leading-none", bigNumCls)}>
                         {rating}
                       </span>
-                      <span className="text-zinc-500 text-sm mb-0.5">/ 5.0</span>
+                      <span className="text-zinc-500 text-base mb-0.5">/ 5.0</span>
                     </div>
                     <span className={cn(
-                      "inline-block text-[11px] font-bold px-2 py-0.5 rounded-md border",
+                      "inline-block text-xs font-bold px-2 py-0.5 rounded-md border",
                       ratingTier === "good"   ? "bg-green-900/60  text-green-300  border-green-700/50"  :
                       ratingTier === "warn"   ? "bg-yellow-900/60 text-yellow-300 border-yellow-700/50" :
                                                "bg-red-900/60    text-red-300    border-red-700/50"
@@ -420,28 +420,28 @@ export function ReviewSection({
                       : "bg-white/5 border-white/10"
                   )}>
                     <p className={cn(
-                      "text-[11px] font-medium",
+                      "text-sm font-medium",
                       gaodeUnregistered ? "text-rose-400" : "text-zinc-400"
                     )}>
                       {R.reportGaode}
                     </p>
                     {gaodeUnregistered ? (
                       <>
-                        <p className="text-rose-300 text-base font-black leading-snug">{R.gaodeUnregistered}</p>
-                        <span className="inline-block text-[11px] font-bold px-2 py-0.5 rounded-md bg-rose-900/60 text-rose-300 border border-rose-700/50">
+                        <p className="text-rose-300 text-lg font-black leading-snug">{R.gaodeUnregistered}</p>
+                        <span className="inline-block text-xs font-bold px-2 py-0.5 rounded-md bg-rose-900/60 text-rose-300 border border-rose-700/50">
                           {R.gaodeUnregisteredBadge}
                         </span>
                       </>
                     ) : (
                       <>
                         <div className="flex items-end gap-2 flex-wrap">
-                          <span className={cn("text-4xl font-black tabular-nums leading-none", gaodeBigNumCls)}>
+                          <span className={cn("text-5xl font-black tabular-nums leading-none", gaodeBigNumCls)}>
                             {gaodeRating}
                           </span>
-                          <span className="text-zinc-500 text-sm mb-0.5">/ 5.0</span>
+                          <span className="text-zinc-500 text-base mb-0.5">/ 5.0</span>
                         </div>
                         <span className={cn(
-                          "inline-block text-[11px] font-bold px-2 py-0.5 rounded-md border",
+                          "inline-block text-xs font-bold px-2 py-0.5 rounded-md border",
                           gaodeTier === "good"   ? "bg-green-900/60  text-green-300  border-green-700/50"  :
                           gaodeTier === "warn"   ? "bg-yellow-900/60 text-yellow-300 border-yellow-700/50" :
                                                    "bg-red-900/60    text-red-300    border-red-700/50"
@@ -458,14 +458,14 @@ export function ReviewSection({
 
           {/* Issues */}
           {selectedIssues.length > 0 && (
-            <div className="bg-zinc-950 px-5 py-4 space-y-3">
-              <p className={cn("text-[10px] font-bold uppercase tracking-widest", C.accent)}>
+            <div className="bg-zinc-950 px-5 py-5 space-y-3">
+              <p className={cn("text-sm font-bold uppercase tracking-widest", C.accent)}>
                 {R.issueCount(selectedIssues.length)}
               </p>
               {selectedIssues.map(code => (
                 <div key={code} className="flex items-start gap-2.5">
-                  <span className="text-red-600 font-black text-base leading-none mt-0.5">&#10005;</span>
-                  <p className="text-zinc-200 text-sm font-medium leading-snug">
+                  <span className="text-red-600 font-black text-lg leading-none mt-0.5">&#10005;</span>
+                  <p className="text-zinc-200 text-base font-medium leading-snug">
                     {R.issueLabels[code]}
                   </p>
                 </div>
@@ -474,26 +474,26 @@ export function ReviewSection({
           )}
 
           {/* Warning banner */}
-          <div className={cn("bg-gradient-to-r border-t px-5 py-4", C.warningGrad, C.warningBorder)}>
-            <p className="text-red-200 text-sm font-bold leading-relaxed">
+          <div className={cn("bg-gradient-to-r border-t px-5 py-5", C.warningGrad, C.warningBorder)}>
+            <p className="text-red-200 text-base font-bold leading-relaxed">
               {R.warning}{" "}
-              <span className="text-white text-base">{R.warningPct}</span>{" "}
+              <span className="text-white text-lg">{R.warningPct}</span>{" "}
               {R.warningEnd}
             </p>
           </div>
 
           {/* Solution */}
-          <div className="bg-zinc-900 border-t border-zinc-800 px-5 py-4 space-y-2">
+          <div className="bg-zinc-900 border-t border-zinc-800 px-5 py-5 space-y-2">
             <div className="flex items-start gap-3">
-              <ShieldCheck className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+              <ShieldCheck className="h-6 w-6 text-green-500 shrink-0 mt-0.5" />
               <div>
-                <p className="text-green-400 text-sm font-bold">{R.solTitle}</p>
-                <p className="text-zinc-400 text-xs mt-1 leading-relaxed">{R.solBody}</p>
+                <p className="text-green-400 text-base font-bold">{R.solTitle}</p>
+                <p className="text-zinc-400 text-sm mt-1 leading-relaxed">{R.solBody}</p>
               </div>
             </div>
             {notes && (
-              <div className="ml-8 rounded-lg bg-zinc-800 border border-zinc-700 px-3 py-2">
-                <p className="text-zinc-300 text-xs leading-relaxed">{notes}</p>
+              <div className="ml-9 rounded-lg bg-zinc-800 border border-zinc-700 px-3 py-2">
+                <p className="text-zinc-300 text-sm leading-relaxed">{notes}</p>
               </div>
             )}
           </div>
