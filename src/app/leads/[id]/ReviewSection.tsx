@@ -363,7 +363,7 @@ export function ReviewSection({
           {/* Header */}
           <div className={cn("bg-gradient-to-br px-5 py-6", C.headerBg)}>
             <div className="flex items-center justify-between mb-4">
-              <div className={cn("flex items-center gap-2 text-sm font-bold uppercase tracking-widest", C.accent)}>
+              <div className={cn("flex items-center gap-2 text-xs font-bold uppercase tracking-widest", C.accent)}>
                 <AlertTriangle className="h-4 w-4" />
                 {R.reportBadge}
               </div>
@@ -427,7 +427,7 @@ export function ReviewSection({
                     </p>
                     {gaodeUnregistered ? (
                       <>
-                        <p className="text-rose-300 text-lg font-black leading-snug">{R.gaodeUnregistered}</p>
+                        <p className="text-rose-300 text-sm font-black leading-snug">{R.gaodeUnregistered}</p>
                         <span className="inline-block text-xs font-bold px-2 py-0.5 rounded-md bg-rose-900/60 text-rose-300 border border-rose-700/50">
                           {R.gaodeUnregisteredBadge}
                         </span>
