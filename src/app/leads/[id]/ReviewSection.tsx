@@ -183,7 +183,7 @@ export function ReviewSection({
 
   // ── Display strings (rendered by browser, encoding-safe in JSX) ─────
   const S = {
-    sectionTitle:  "🔥 數碼營銷健康審查報告",
+    sectionTitle:  "數碼營銷健康審查報告",
     labelRating:   "Google Maps 評分（5.0 為滿分）",
     labelIssues:   "發現的數碼營銷漏洞",
     labelNotes:    "附加備註",
@@ -498,17 +498,15 @@ export function ReviewSection({
             )}
           </div>
 
-          {/* WhatsApp CTA */}
-          <div className="bg-zinc-950 border-t border-zinc-800 px-4 py-4">
-            <button
-              type="button"
-              onClick={handleWhatsApp}
-              className="w-full flex items-center justify-center gap-2.5 rounded-xl bg-green-600 hover:bg-green-500 active:bg-green-700 text-white font-bold text-base py-3.5 transition-colors"
-            >
-              {S.waBtn}
-            </button>
-          </div>
         </div>
+        {/* WhatsApp CTA — outside the card so it won't appear in screenshots */}
+        <button
+          type="button"
+          onClick={handleWhatsApp}
+          className="w-full flex items-center justify-center gap-2.5 rounded-xl bg-green-600 hover:bg-green-500 active:bg-green-700 text-white font-bold text-base py-3.5 transition-colors mt-3"
+        >
+          {S.waBtn}
+        </button>
       )}
     </section>
   );
