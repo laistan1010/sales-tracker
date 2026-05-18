@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { UserPlus, Phone, Briefcase, UserRound } from "lucide-react";
 import { createContact, deleteContact } from "./actions";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface Contact {
   id: string;
