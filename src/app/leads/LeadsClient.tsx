@@ -123,7 +123,8 @@ export function LeadsClient({ leads, filterType, filterValue }: Props) {
       {/* ── Filter value chips ──────────────────────────────────── */}
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
         {filterOptions.map(({ value, label }) => {
-          const isActive = filterValue === value || (value === "all" && filterValue === "all");
+          const activeSet = filterValue === "all" ? ["all"] : filterValue.split(",");
+          const isActive = activeSet.includes(value) || (value === "all" && filterValue === "all");
           let chipColor = "";
           if (value !== "all" && filterType === "industry")
             chipColor = INDUSTRY_LABELS[value as Industry].color;

@@ -46,10 +46,10 @@ export default async function HomePage() {
   }, {});
 
   const statCards = [
-    { label: "全部商戶",    value: total,                                                               status: null },
-    { label: "成交",        value: byStatus["CLOSED_WON"] ?? 0,                                        status: "CLOSED_WON"  as LeadStatus },
-    { label: "提案 / 處理", value: (byStatus["DEMO"] ?? 0) + (byStatus["OBJECTION"] ?? 0),             status: "DEMO"         as LeadStatus },
-    { label: "潛在客戶",    value: (byStatus["LEAD"] ?? 0) + (byStatus["CONTACTED"] ?? 0),             status: "LEAD"         as LeadStatus },
+    { label: "全部商戶",    value: total,                                                               status: null,                          href: "/leads" },
+    { label: "成交",        value: byStatus["CLOSED_WON"] ?? 0,                                        status: "CLOSED_WON"  as LeadStatus,   href: "/leads?by=status&filter=CLOSED_WON" },
+    { label: "提案 / 處理", value: (byStatus["DEMO"] ?? 0) + (byStatus["OBJECTION"] ?? 0),             status: "DEMO"         as LeadStatus,  href: "/leads?by=status&filter=DEMO,OBJECTION" },
+    { label: "潛在客戶",    value: (byStatus["LEAD"] ?? 0) + (byStatus["CONTACTED"] ?? 0),             status: "LEAD"         as LeadStatus,  href: "/leads?by=status&filter=LEAD,CONTACTED" },
   ];
 
   // ── Upcoming tasks (today + 7 days) ────────────────────────────────────
@@ -114,8 +114,12 @@ export default async function HomePage() {
 
       {/* ── Stat cards ────────────────────────────────────────────────── */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        {statCards.map(({ label, value, status }) => (
-          <div key={label} className="rounded-xl border bg-card p-5 shadow-sm">
+        {statCards.map(({ label, value, status, href }) => (
+          <Link
+            key={label}
+            href={href}
+            className="rounded-xl border bg-card p-5 shadow-sm hover:bg-accent transition-colors active:bg-accent/80"
+          >
             <div className="flex items-center justify-between gap-2">
               <p className="text-sm font-medium text-muted-foreground">{label}</p>
               {status && (
@@ -128,7 +132,7 @@ export default async function HomePage() {
               )}
             </div>
             <p className="mt-2 text-3xl font-bold">{value}</p>
-          </div>
+          </Link>
         ))}
       </div>
 
