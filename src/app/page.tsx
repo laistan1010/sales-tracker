@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { STATUS_LABELS, TASK_TYPE_META } from "@/lib/constants";
 import type { LeadStatus } from "@/generated/prisma/enums";
 import Link from "next/link";
-import { CalendarDays, Clock } from "lucide-react";
+import { CalendarDays, Clock, Users } from "lucide-react";
 
 function getHKDateStrings() {
   const nowHK    = new Date(Date.now() + 8 * 60 * 60 * 1000);
@@ -30,12 +30,12 @@ export default async function HomePage() {
   const isAdmin = session!.user.role === "ADMIN";
   const name    = session!.user.name ?? "Sales";
 
-  const baseWhere = isAdmin ? {} : { assignedToId: userId };
   const { todayStr, in7Days, greeting } = getHKDateStrings();
 
-  // ── Stats ──────────────────────────────────────────────────────────────
+  // ── Stats (admin sees all, sales sees own) ─────────────────────────────
+  const statsWhere = isAdmin ? {} : { assignedToId: userId };
   const leads = await prisma.lead.findMany({
-    where: baseWhere,
+    where: statsWhere,
     select: { status: true },
   });
 
@@ -46,13 +46,98 @@ export default async function HomePage() {
   }, {});
 
   const statCards = [
-    { label: "全部商戶",    value: total,                                                               status: null,                          href: "/leads" },
-    { label: "成交",        value: byStatus["CLOSED_WON"] ?? 0,                                        status: "CLOSED_WON"  as LeadStatus,   href: "/leads?by=status&filter=CLOSED_WON" },
-    { label: "提案 / 處理", value: (byStatus["DEMO"] ?? 0) + (byStatus["OBJECTION"] ?? 0),             status: "DEMO"         as LeadStatus,  href: "/leads?by=status&filter=DEMO,OBJECTION" },
-    { label: "潛在客戶",    value: (byStatus["LEAD"] ?? 0) + (byStatus["CONTACTED"] ?? 0),             status: "LEAD"         as LeadStatus,  href: "/leads?by=status&filter=LEAD,CONTACTED" },
+    { label: "全部商戶",    value: total,                                                     status: null,                         href: "/leads" },
+    { label: "成交",        value: byStatus["CLOSED_WON"] ?? 0,                              status: "CLOSED_WON" as LeadStatus,   href: "/leads?by=status&filter=CLOSED_WON" },
+    { label: "提案 / 處理", value: (byStatus["DEMO"] ?? 0) + (byStatus["OBJECTION"] ?? 0),   status: "DEMO"       as LeadStatus,   href: "/leads?by=status&filter=DEMO,OBJECTION" },
+    { label: "潛在客戶",    value: (byStatus["LEAD"] ?? 0) + (byStatus["CONTACTED"] ?? 0),   status: "LEAD"       as LeadStatus,   href: "/leads?by=status&filter=LEAD,CONTACTED" },
   ];
 
-  // ── Upcoming tasks (today + 7 days) — always scoped to current user ──
+  // ── Admin: team summary ────────────────────────────────────────────────
+  if (isAdmin) {
+    const [salesUsers, leadCounts, teamTasks] = await Promise.all([
+      prisma.user.findMany({ where: { role: "SALES" }, orderBy: { name: "asc" } }),
+      prisma.lead.groupBy({ by: ["assignedToId"], _count: { id: true } }),
+      prisma.task.findMany({
+        where: { date: { gte: todayStr, lte: in7Days } },
+        select: { date: true, lead: { select: { assignedToId: true } } },
+      }),
+    ]);
+
+    const teamSummary = salesUsers.map(user => {
+      const leadCount      = leadCounts.find(l => l.assignedToId === user.id)?._count.id ?? 0;
+      const userTasks      = teamTasks.filter(t => t.lead.assignedToId === user.id);
+      const todayCount     = userTasks.filter(t => t.date === todayStr).length;
+      const upcomingCount  = userTasks.filter(t => t.date >  todayStr).length;
+      return { user, leadCount, todayCount, upcomingCount };
+    });
+
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">{greeting}，{name} 👋</h1>
+          <p className="text-sm text-muted-foreground">全團隊數據總覽</p>
+        </div>
+
+        {/* Stat cards */}
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+          {statCards.map(({ label, value, status, href }) => (
+            <Link
+              key={label}
+              href={href}
+              className="rounded-xl border bg-card p-5 shadow-sm hover:bg-accent transition-colors active:bg-accent/80"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-medium text-muted-foreground">{label}</p>
+                {status && (
+                  <Badge variant="outline" className={`text-xs shrink-0 ${STATUS_LABELS[status].color}`}>
+                    {STATUS_LABELS[status].zh}
+                  </Badge>
+                )}
+              </div>
+              <p className="mt-2 text-3xl font-bold">{value}</p>
+            </Link>
+          ))}
+        </div>
+
+        {/* Team summary */}
+        <section className="space-y-3">
+          <h2 className="text-base font-semibold flex items-center gap-2">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            團隊工作概覽
+          </h2>
+          <div className="space-y-2">
+            {teamSummary.map(({ user, leadCount, todayCount, upcomingCount }) => (
+              <div key={user.id} className="flex items-center gap-4 rounded-xl border bg-card px-4 py-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-foreground text-background font-bold text-sm">
+                  {user.name.charAt(0)}
+                </div>
+                <p className="flex-1 font-semibold text-sm">{user.name}</p>
+                <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                  <span className="text-center">
+                    <span className="block text-base font-black text-foreground">{leadCount}</span>
+                    商戶
+                  </span>
+                  <span className="text-center">
+                    <span className={`block text-base font-black ${todayCount > 0 ? "text-amber-500" : "text-foreground"}`}>
+                      {todayCount}
+                    </span>
+                    今日
+                  </span>
+                  <span className="text-center">
+                    <span className="block text-base font-black text-foreground">{upcomingCount}</span>
+                    7日內
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  // ── Sales: personal view ───────────────────────────────────────────────
   const upcomingTasks = await prisma.task.findMany({
     where: {
       date: { gte: todayStr, lte: in7Days },
@@ -70,7 +155,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-6">
 
-      {/* ── Today banner ──────────────────────────────────────────────── */}
+      {/* Today banner */}
       {todayTasks.length > 0 ? (
         <div className="rounded-2xl bg-gradient-to-r from-amber-500 to-orange-400 p-4 shadow-sm text-white flex items-center justify-between gap-3">
           <div>
@@ -106,13 +191,11 @@ export default async function HomePage() {
           <h1 className="text-2xl font-bold tracking-tight">
             {greeting}，{name} 👋
           </h1>
-          <p className="text-muted-foreground text-sm">
-            {isAdmin ? "全團隊數據總覽" : "你的個人數據"}
-          </p>
+          <p className="text-muted-foreground text-sm">你的個人數據</p>
         </div>
       )}
 
-      {/* ── Stat cards ────────────────────────────────────────────────── */}
+      {/* Stat cards */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {statCards.map(({ label, value, status, href }) => (
           <Link
@@ -123,10 +206,7 @@ export default async function HomePage() {
             <div className="flex items-center justify-between gap-2">
               <p className="text-sm font-medium text-muted-foreground">{label}</p>
               {status && (
-                <Badge
-                  variant="outline"
-                  className={`text-xs shrink-0 ${STATUS_LABELS[status].color}`}
-                >
+                <Badge variant="outline" className={`text-xs shrink-0 ${STATUS_LABELS[status].color}`}>
                   {STATUS_LABELS[status].zh}
                 </Badge>
               )}
@@ -136,7 +216,7 @@ export default async function HomePage() {
         ))}
       </div>
 
-      {/* ── Upcoming 7-day schedule ───────────────────────────────────── */}
+      {/* Upcoming 7-day schedule */}
       {futureTasks.length > 0 && (
         <section className="space-y-3">
           <h2 className="text-base font-semibold flex items-center gap-2">
@@ -177,11 +257,9 @@ export default async function HomePage() {
         </section>
       )}
 
-      {!isAdmin && (
-        <p className="text-xs text-muted-foreground">
-          * 只顯示分配給你的商戶數據。Admin 可查看全團隊數據。
-        </p>
-      )}
+      <p className="text-xs text-muted-foreground">
+        * 只顯示分配給你的商戶數據。
+      </p>
     </div>
   );
 }
