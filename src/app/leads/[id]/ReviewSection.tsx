@@ -358,6 +358,7 @@ export function ReviewSection({
 
       {/* ── Report card ─────────────────────────────────────────── */}
       {showReport && hasData && (
+        <>
         <div className={cn("rounded-2xl overflow-hidden border-2 shadow-xl", C.border, C.shadow)}>
 
           {/* Header */}
@@ -499,7 +500,6 @@ export function ReviewSection({
           </div>
 
         </div>
-        {/* WhatsApp CTA — outside the card so it won't appear in screenshots */}
         <button
           type="button"
           onClick={handleWhatsApp}
@@ -507,6 +507,7 @@ export function ReviewSection({
         >
           {S.waBtn}
         </button>
+        </>
       )}
     </section>
   );
