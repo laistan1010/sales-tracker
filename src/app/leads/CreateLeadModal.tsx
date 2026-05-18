@@ -38,6 +38,7 @@ const initial: ActionState = {};
 export function CreateLeadModal() {
   const [open, setOpen]         = useState(false);
   const [industry, setIndustry] = useState("");
+  const [district, setDistrict] = useState("");
   const [state, formAction, isPending] = useActionState(createLead, initial);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -45,13 +46,14 @@ export function CreateLeadModal() {
     if (state.success) {
       setOpen(false);
       setIndustry("");
+      setDistrict("");
       formRef.current?.reset();
     }
   }, [state.success]);
 
   function handleOpenChange(val: boolean) {
     setOpen(val);
-    if (!val) { setIndustry(""); formRef.current?.reset(); }
+    if (!val) { setIndustry(""); setDistrict(""); formRef.current?.reset(); }
   }
 
   const fe = state.fieldErrors ?? {};
@@ -77,8 +79,9 @@ export function CreateLeadModal() {
           </p>
 
           <form ref={formRef} action={formAction} className="space-y-4">
-            {/* Hidden input carries Select value into FormData */}
+            {/* Hidden inputs carry Select values into FormData */}
             <input type="hidden" name="industry" value={industry} />
+            <input type="hidden" name="district" value={district} />
 
             {/* ① Store Name */}
             <div className="space-y-1">
@@ -116,18 +119,16 @@ export function CreateLeadModal() {
             {/* ③ District / MTR Station */}
             <div className="space-y-1">
               <Label>區份 / 地鐵站 *</Label>
-              {/* datalist lets Sales type freely OR pick from common stations */}
-              <Input
-                name="district"
-                placeholder="例：旺角、銅鑼灣、觀塘…"
-                list="hk-districts"
-                autoComplete="off"
-              />
-              <datalist id="hk-districts">
-                {HK_DISTRICTS.map((d) => (
-                  <option key={d} value={d} />
-                ))}
-              </datalist>
+              <Select value={district} onValueChange={setDistrict}>
+                <SelectTrigger>
+                  <SelectValue placeholder="選擇區份 / 地鐵站" />
+                </SelectTrigger>
+                <SelectContent>
+                  {HK_DISTRICTS.map((d) => (
+                    <SelectItem key={d} value={d}>{d}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {fe.district && (
                 <p className="text-xs text-destructive">{fe.district}</p>
               )}
