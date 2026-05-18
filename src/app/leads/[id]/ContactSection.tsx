@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UserPlus, Phone, Briefcase, UserRound } from "lucide-react";
-import { createContact } from "./actions";
+import { createContact, deleteContact } from "./actions";
 import { useState } from "react";
 
 interface Contact {
@@ -33,6 +33,22 @@ const initial = {};
 export function ContactSection({ leadId, contacts }: Props) {
   const [open, setOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const [deletingId,   setDeletingId]   = useState<string | null>(null);
+  const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
+
+  async function handleDeleteClick(contactId: string) {
+    if (deletingId === contactId) {
+      // Second click — confirm delete
+      setIsDeletingId(contactId);
+      await deleteContact(leadId, contactId);
+      setIsDeletingId(null);
+      setDeletingId(null);
+    } else {
+      // First click — enter confirm state, auto-cancel after 5s
+      setDeletingId(contactId);
+      setTimeout(() => setDeletingId(prev => prev === contactId ? null : prev), 5000);
+    }
+  }
 
   // Bind leadId into the Server Action so FormData is the only runtime arg
   const boundAction = createContact.bind(null, leadId);
@@ -75,9 +91,25 @@ export function ContactSection({ leadId, contacts }: Props) {
               key={c.id}
               className="rounded-xl border bg-card p-3 space-y-1.5"
             >
-              <div className="flex items-center gap-2">
-                <UserRound className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <span className="font-semibold">{c.name}</span>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <UserRound className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <span className="font-semibold truncate">{c.name}</span>
+                </div>
+                {/* Two-step delete */}
+                <button
+                  type="button"
+                  onClick={() => handleDeleteClick(c.id)}
+                  disabled={isDeletingId === c.id}
+                  className={cn(
+                    "shrink-0 rounded-lg px-2.5 py-1 text-xs font-medium transition-colors",
+                    deletingId === c.id
+                      ? "animate-pulse bg-red-500 text-white"
+                      : "border border-border bg-background text-muted-foreground hover:bg-muted"
+                  )}
+                >
+                  {isDeletingId === c.id ? "刪除中…" : deletingId === c.id ? "確定刪除？" : "刪除"}
+                </button>
               </div>
               {c.title && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">

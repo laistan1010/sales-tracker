@@ -86,16 +86,27 @@ export async function updateLeadStatus(
   return { success: true };
 }
 
+// ── Delete Contact ───────────────────────────────────────────────────────
+export async function deleteContact(
+  leadId: string,
+  contactId: string
+): Promise<ActionState> {
+  await prisma.contact.delete({ where: { id: contactId } });
+  revalidatePath(`/leads/${leadId}`);
+  return { success: true };
+}
+
 // ── Update Lead basic info ───────────────────────────────────────────────
 export async function updateLead(
   leadId: string,
   _prev: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  const district      = (formData.get("district")     as string | null)?.trim() || undefined;
-  const address       = (formData.get("address")      as string | null)?.trim() || null;
+  const district      = (formData.get("district")      as string | null)?.trim() || undefined;
+  const address       = (formData.get("address")       as string | null)?.trim() || null;
   const googleMapsUrl = (formData.get("googleMapsUrl") as string | null)?.trim() || null;
-  const openRiceUrl   = (formData.get("openRiceUrl")  as string | null)?.trim() || null;
+  const openRiceUrl   = (formData.get("openRiceUrl")   as string | null)?.trim() || null;
+  const gaodeMapsUrl  = (formData.get("gaodeMapsUrl")  as string | null)?.trim() || null;
 
   await prisma.lead.update({
     where: { id: leadId },
@@ -104,6 +115,7 @@ export async function updateLead(
       address,
       googleMapsUrl,
       openRiceUrl,
+      gaodeMapsUrl,
     },
   });
 

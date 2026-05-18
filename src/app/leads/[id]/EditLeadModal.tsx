@@ -31,6 +31,7 @@ interface Props {
   address: string | null;
   googleMapsUrl: string | null;
   openRiceUrl: string | null;
+  gaodeMapsUrl: string | null;
 }
 
 const initial = {};
@@ -41,6 +42,7 @@ export function EditLeadModal({
   address,
   googleMapsUrl,
   openRiceUrl,
+  gaodeMapsUrl,
 }: Props) {
   const [open, setOpen] = useState(false);
   const boundAction = updateLead.bind(null, leadId);
@@ -117,11 +119,21 @@ export function EditLeadModal({
               />
             </div>
 
-            <DialogFooter className="gap-2 pt-1">
+            <div className="space-y-1">
+              <Label>📍 Amap 高德地圖 URL <span className="text-muted-foreground font-normal">（選填）</span></Label>
+              <Input
+                name="gaodeMapsUrl"
+                defaultValue={gaodeMapsUrl ?? ""}
+                placeholder="https://amap.com/..."
+                inputMode="url"
+              />
+            </div>
+
+            <DialogFooter className="gap-2 pt-2">
               <DialogClose asChild>
-                <Button type="button" variant="outline" className="flex-1">取消</Button>
+                <Button type="button" variant="outline" className="flex-1 h-11">取消</Button>
               </DialogClose>
-              <Button type="submit" disabled={isPending} className="flex-1">
+              <Button type="submit" disabled={isPending} className="flex-1 h-11">
                 {isPending ? "儲存中…" : "儲存"}
               </Button>
             </DialogFooter>

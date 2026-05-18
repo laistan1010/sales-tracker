@@ -52,6 +52,7 @@ model Lead {
   objectionNotes String?
   googleMapsUrl String?
   openRiceUrl   String?
+  gaodeMapsUrl  String?
   assignedToId  String?
   reviewRating  String?
   gaodeRating   String?

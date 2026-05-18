@@ -61,6 +61,7 @@ export default async function LeadDetailPage({ params }: PageProps) {
               address={lead.address}
               googleMapsUrl={lead.googleMapsUrl}
               openRiceUrl={lead.openRiceUrl}
+              gaodeMapsUrl={lead.gaodeMapsUrl}
             />
             <span
               className={cn(
@@ -101,7 +102,7 @@ export default async function LeadDetailPage({ params }: PageProps) {
         )}
 
         {/* External links */}
-        {(lead.googleMapsUrl || lead.openRiceUrl) && (
+        {(lead.googleMapsUrl || lead.openRiceUrl || lead.gaodeMapsUrl) && (
           <div className="flex flex-wrap gap-2 pt-1">
             {lead.googleMapsUrl && (
               <a
@@ -122,6 +123,17 @@ export default async function LeadDetailPage({ params }: PageProps) {
                 className="inline-flex items-center gap-1.5 rounded-lg border bg-background px-3 py-2 text-sm font-medium hover:bg-accent transition-colors"
               >
                 <span>🍽️</span> OpenRice
+                <ExternalLink className="h-3 w-3 text-muted-foreground" />
+              </a>
+            )}
+            {lead.gaodeMapsUrl && (
+              <a
+                href={lead.gaodeMapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-lg border bg-background px-3 py-2 text-sm font-medium hover:bg-accent transition-colors"
+              >
+                <span>📍</span> Amap 高德
                 <ExternalLink className="h-3 w-3 text-muted-foreground" />
               </a>
             )}
