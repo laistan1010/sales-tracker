@@ -196,7 +196,7 @@ export function ReviewSection({
     reportBadge:           "DIGITAL MARKETING HEALTH AUDIT",
     reportShop:            "Business Name",
     reportGMaps:           "Google Maps Rating",
-    reportGaode:           "Amap Gaode Maps Rating (Mainland Visitors)",
+    reportGaode:           "Amap Rating (Mainland Visitors)",
     issueCount:            (n: number) => n + " Digital Marketing Issue" + (n > 1 ? "s" : "") + " Found",
     warning:               "Based on big data analysis, unoptimised business profiles are estimated to cause up to",
     warningPct:            "15% – 20%",
