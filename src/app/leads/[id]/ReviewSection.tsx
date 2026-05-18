@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useActionState, useState } from "react";
-import { AlertTriangle, ShieldCheck, Zap } from "lucide-react";
+import { ShieldCheck, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -244,7 +244,7 @@ export function ReviewSection({
 
   return (
     <section className="space-y-4">
-      <h2 className="text-base font-semibold">{S.sectionTitle}</h2>
+      <h2 className="text-lg font-semibold">{S.sectionTitle}</h2>
 
       {/* ── Input form ──────────────────────────────────────────── */}
       <form action={formAction} className="rounded-2xl border bg-card p-4 space-y-4">
@@ -359,28 +359,31 @@ export function ReviewSection({
       {/* ── Report card ─────────────────────────────────────────── */}
       {showReport && hasData && (
         <>
+        {/* Language toggle — outside card so it won't appear in screenshots */}
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-muted-foreground">語言 / Language</span>
+          <div className="flex rounded-lg overflow-hidden border text-xs font-bold">
+            <button
+              type="button"
+              onClick={() => setReportLang("zh")}
+              className={cn("px-3 py-1.5 transition-colors", !isEN ? "bg-foreground text-background" : "text-muted-foreground hover:bg-muted")}
+            >中</button>
+            <button
+              type="button"
+              onClick={() => setReportLang("en")}
+              className={cn("px-3 py-1.5 transition-colors", isEN ? "bg-foreground text-background" : "text-muted-foreground hover:bg-muted")}
+            >EN</button>
+          </div>
+        </div>
+
         <div className={cn("rounded-2xl overflow-hidden border-2 shadow-xl", C.border, C.shadow)}>
 
           {/* Header */}
           <div className={cn("bg-gradient-to-br px-5 py-6", C.headerBg)}>
-            <div className="flex items-center justify-between mb-4">
-              <div className={cn("flex items-center gap-2 text-xs font-bold uppercase tracking-widest", C.accent)}>
-                <AlertTriangle className="h-4 w-4" />
+            <div className="mb-4">
+              <p className={cn("text-sm font-bold uppercase tracking-widest", C.accent)}>
                 {R.reportBadge}
-              </div>
-              {/* Language toggle */}
-              <div className="flex rounded-lg overflow-hidden border border-white/20 text-xs font-bold">
-                <button
-                  type="button"
-                  onClick={() => setReportLang("zh")}
-                  className={cn("px-2.5 py-1 transition-colors", !isEN ? "bg-white text-zinc-900" : "bg-white/10 text-white/60 hover:bg-white/20")}
-                >中</button>
-                <button
-                  type="button"
-                  onClick={() => setReportLang("en")}
-                  className={cn("px-2.5 py-1 transition-colors", isEN ? "bg-white text-zinc-900" : "bg-white/10 text-white/60 hover:bg-white/20")}
-                >EN</button>
-              </div>
+              </p>
             </div>
             <p className="text-zinc-500 text-sm mb-1">{R.reportShop}</p>
             <h3 className="text-white text-2xl font-black">{storeName}</h3>
