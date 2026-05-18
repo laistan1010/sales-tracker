@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import type { ActivityType, LeadStatus } from "@/generated/prisma/enums";
+import type { ActivityType, LeadStatus, TaskType } from "@/generated/prisma/enums";
+import { TASK_TYPE_META } from "@/lib/constants";
 import { STATUS_LABELS } from "@/lib/constants";
 
 type ActionState = {
@@ -86,30 +87,50 @@ export async function updateLeadStatus(
   return { success: true };
 }
 
-// ── Set / Clear Appointment ──────────────────────────────────────────────
-export async function setAppointment(
+// ── Tasks ────────────────────────────────────────────────────────────────
+export async function createTask(
   leadId: string,
   _prev: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  const type  = ((formData.get("type")  as string | null) || "MEETING") as TaskType;
   const date  = (formData.get("date")  as string | null)?.trim() || null;
   const time  = (formData.get("time")  as string | null)?.trim() || null;
   const notes = (formData.get("notes") as string | null)?.trim() || null;
+
   if (!date) return { error: "請選擇日期" };
-  await prisma.lead.update({
-    where: { id: leadId },
-    data: { appointmentDate: date, appointmentTime: time, appointmentNotes: notes },
+
+  await prisma.task.create({
+    data: { leadId, type, date, time: time || null, notes: notes || null },
   });
   revalidatePath(`/leads/${leadId}`);
   revalidatePath("/");
   return { success: true };
 }
 
-export async function clearAppointment(leadId: string): Promise<ActionState> {
-  await prisma.lead.update({
-    where: { id: leadId },
-    data: { appointmentDate: null, appointmentTime: null, appointmentNotes: null },
-  });
+export async function deleteTask(leadId: string, taskId: string): Promise<ActionState> {
+  await prisma.task.delete({ where: { id: taskId } });
+  revalidatePath(`/leads/${leadId}`);
+  return { success: true };
+}
+
+export async function completeTask(leadId: string, taskId: string): Promise<ActionState> {
+  const task = await prisma.task.findUnique({ where: { id: taskId } });
+  if (!task) return { error: "任務不存在" };
+
+  const meta = TASK_TYPE_META[task.type];
+
+  await prisma.$transaction([
+    prisma.activity.create({
+      data: {
+        leadId,
+        type: meta.activityType as ActivityType,
+        notes: task.notes || `已完成${meta.zh}`,
+      },
+    }),
+    prisma.task.delete({ where: { id: taskId } }),
+  ]);
+
   revalidatePath(`/leads/${leadId}`);
   revalidatePath("/");
   return { success: true };
