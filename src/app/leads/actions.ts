@@ -43,3 +43,13 @@ export async function createLead(
   revalidatePath("/leads");
   return { success: true };
 }
+
+export async function deleteLead(leadId: string): Promise<ActionState> {
+  const session = await auth();
+  if (session?.user?.role !== "ADMIN") return { error: "只有管理員可以刪除商戶" };
+
+  await prisma.lead.delete({ where: { id: leadId } });
+  revalidatePath("/leads");
+  revalidatePath("/");
+  return { success: true };
+}

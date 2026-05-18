@@ -1,18 +1,19 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useTransition } from "react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import type { Lead, User } from "@/generated/prisma/client";
-import type { Industry, LeadStatus } from "@/generated/prisma/enums";
+import type { LeadStatus } from "@/generated/prisma/enums";
 import {
   ALL_INDUSTRIES,
   ALL_STATUSES,
   INDUSTRY_LABELS,
   STATUS_LABELS,
 } from "@/lib/constants";
-import { MapPin, ChevronRight } from "lucide-react";
+import { MapPin, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { deleteLead } from "./actions";
 
 const HK_DISTRICTS = [
   "尖沙咀", "旺角", "油麻地", "佐敦", "深水埗",
@@ -27,14 +28,56 @@ interface Props {
   leads: LeadWithUser[];
   filterType: "industry" | "status";
   filterValue: string;
+  isAdmin: boolean;
 }
 
-export function LeadsClient({ leads, filterType, filterValue }: Props) {
+interface DeleteDialogProps {
+  storeName: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  isPending: boolean;
+}
+
+function DeleteDialog({ storeName, onConfirm, onCancel, isPending }: DeleteDialogProps) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60" onClick={onCancel} />
+      <div className="relative w-full max-w-sm rounded-2xl bg-card border shadow-xl p-6 space-y-4">
+        <div className="space-y-1">
+          <h3 className="text-base font-bold">確認刪除商戶？</h3>
+          <p className="text-sm text-muted-foreground">
+            「{storeName}」連同所有聯絡人、跟進記錄及任務將被永久刪除，此操作不可撤銷。
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={onCancel}
+            disabled={isPending}
+            className="flex-1 h-11 rounded-xl border font-medium text-sm hover:bg-muted transition-colors"
+          >
+            取消
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isPending}
+            className="flex-1 h-11 rounded-xl bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-bold text-sm transition-colors disabled:opacity-50"
+          >
+            {isPending ? "刪除中…" : "確認刪除"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function LeadsClient({ leads, filterType, filterValue, isAdmin }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const [districtFilter, setDistrictFilter] = useState("all");
+  const [deleteTarget, setDeleteTarget] = useState<LeadWithUser | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   const setParam = useCallback(
     (key: string, value: string) => {
@@ -59,6 +102,14 @@ export function LeadsClient({ leads, filterType, filterValue }: Props) {
     [router, pathname, searchParams]
   );
 
+  function handleDeleteConfirm() {
+    if (!deleteTarget) return;
+    startTransition(async () => {
+      await deleteLead(deleteTarget.id);
+      setDeleteTarget(null);
+    });
+  }
+
   const filterOptions =
     filterType === "industry"
       ? [
@@ -77,7 +128,16 @@ export function LeadsClient({ leads, filterType, filterValue }: Props) {
 
   return (
     <div className="space-y-4">
-      {/* ── District filter ─────────────────────────────────────── */}
+      {deleteTarget && (
+        <DeleteDialog
+          storeName={deleteTarget.storeName}
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => setDeleteTarget(null)}
+          isPending={isPending}
+        />
+      )}
+
+      {/* ── District filter ─────────────────────────────────────────── */}
       <div className="flex items-center gap-2">
         <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
         <select
@@ -102,7 +162,7 @@ export function LeadsClient({ leads, filterType, filterValue }: Props) {
         )}
       </div>
 
-      {/* ── Filter type toggle ──────────────────────────────────── */}
+      {/* ── Filter type toggle ──────────────────────────────────────── */}
       <div className="flex gap-2 rounded-xl border bg-muted p-1 text-sm font-medium">
         {(["industry", "status"] as const).map((type) => (
           <button
@@ -120,16 +180,16 @@ export function LeadsClient({ leads, filterType, filterValue }: Props) {
         ))}
       </div>
 
-      {/* ── Filter value chips ──────────────────────────────────── */}
+      {/* ── Filter value chips ──────────────────────────────────────── */}
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
         {filterOptions.map(({ value, label }) => {
           const activeSet = filterValue === "all" ? ["all"] : filterValue.split(",");
           const isActive = activeSet.includes(value) || (value === "all" && filterValue === "all");
           let chipColor = "";
           if (value !== "all" && filterType === "industry")
-            chipColor = INDUSTRY_LABELS[value as Industry].color;
+            chipColor = INDUSTRY_LABELS[value as keyof typeof INDUSTRY_LABELS]?.color ?? "";
           if (value !== "all" && filterType === "status")
-            chipColor = STATUS_LABELS[value as LeadStatus].color;
+            chipColor = STATUS_LABELS[value as LeadStatus]?.color ?? "";
 
           return (
             <button
@@ -148,7 +208,7 @@ export function LeadsClient({ leads, filterType, filterValue }: Props) {
         })}
       </div>
 
-      {/* ── Count ───────────────────────────────────────────────── */}
+      {/* ── Count ───────────────────────────────────────────────────── */}
       <p className="text-xs text-muted-foreground">
         {visibleLeads.length} 間商戶
         {districtFilter !== "all" && (
@@ -156,68 +216,63 @@ export function LeadsClient({ leads, filterType, filterValue }: Props) {
         )}
       </p>
 
-      {/* ── Lead cards ──────────────────────────────────────────── */}
-      <ul className="space-y-3">
-        {visibleLeads.length === 0 ? (
-          <li className="rounded-xl border bg-card p-8 text-center text-sm text-muted-foreground">
-            {districtFilter !== "all"
-              ? `${districtFilter} 暫無商戶`
-              : "沒有符合的商戶"}
-          </li>
-        ) : (
-          visibleLeads.map((lead) => {
-            const industryMeta = INDUSTRY_LABELS[lead.industry];
+      {/* ── Lead grid ───────────────────────────────────────────────── */}
+      {visibleLeads.length === 0 ? (
+        <div className="rounded-xl border bg-card p-8 text-center text-sm text-muted-foreground">
+          {districtFilter !== "all"
+            ? `${districtFilter} 暫無商戶`
+            : "沒有符合的商戶"}
+        </div>
+      ) : (
+        <ul className="grid grid-cols-2 gap-3">
+          {visibleLeads.map((lead) => {
             const statusMeta = STATUS_LABELS[lead.status];
             return (
-              <li key={lead.id}>
+              <li key={lead.id} className="relative">
                 <Link
                   href={`/leads/${lead.id}`}
-                  className="flex items-center gap-3 rounded-xl border bg-card p-4 shadow-sm transition-colors active:bg-accent"
+                  className="flex flex-col gap-1.5 rounded-xl border bg-card p-3 shadow-sm transition-colors active:bg-accent h-full"
                 >
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <div className="flex items-baseline gap-2 min-w-0">
-                      <p className="truncate font-semibold leading-tight">{lead.storeName}</p>
-                      <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
-                        📍 {lead.district}
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span
-                        className={cn(
-                          "inline-flex rounded-full border px-2 py-0.5 text-xs font-medium",
-                          industryMeta.color
-                        )}
-                      >
-                        {industryMeta.zh}
-                      </span>
-                      <span
-                        className={cn(
-                          "inline-flex rounded-full border px-2 py-0.5 text-xs font-medium",
-                          statusMeta.color
-                        )}
-                      >
-                        {statusMeta.zh}
-                      </span>
-                    </div>
-                    {lead.address && (
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <MapPin className="h-3 w-3 shrink-0" />
-                        <span className="truncate">{lead.address}</span>
-                      </div>
+                  <p className="truncate font-semibold text-sm leading-tight pr-5">
+                    {lead.storeName}
+                  </p>
+                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                    <MapPin className="h-3 w-3 shrink-0" />
+                    <span className="truncate">{lead.district}</span>
+                  </span>
+                  <span
+                    className={cn(
+                      "self-start inline-flex rounded-full border px-2 py-0.5 text-xs font-medium",
+                      statusMeta.color
                     )}
-                    {lead.assignedTo && (
-                      <p className="text-xs text-muted-foreground">
-                        負責：{lead.assignedTo.name}
-                      </p>
-                    )}
-                  </div>
-                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  >
+                    {statusMeta.zh}
+                  </span>
+                  {isAdmin && lead.assignedTo && (
+                    <p className="text-xs text-muted-foreground truncate">
+                      {lead.assignedTo.name}
+                    </p>
+                  )}
                 </Link>
+
+                {/* Delete button — admin only */}
+                {isAdmin && (
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setDeleteTarget(lead);
+                    }}
+                    className="absolute top-2.5 right-2.5 flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:bg-red-100 hover:text-red-600 transition-colors"
+                    aria-label="刪除商戶"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                )}
               </li>
             );
-          })
-        )}
-      </ul>
+          })}
+        </ul>
+      )}
     </div>
   );
 }

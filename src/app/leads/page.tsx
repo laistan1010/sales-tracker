@@ -61,6 +61,7 @@ export default async function LeadsPage({ searchParams }: PageProps) {
           leads={leads}
           filterType={filterType}
           filterValue={validFilter ? filterValue : "all"}
+          isAdmin={isAdmin}
         />
       </Suspense>
     </div>
