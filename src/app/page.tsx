@@ -52,11 +52,11 @@ export default async function HomePage() {
     { label: "潛在客戶",    value: (byStatus["LEAD"] ?? 0) + (byStatus["CONTACTED"] ?? 0),             status: "LEAD"         as LeadStatus,  href: "/leads?by=status&filter=LEAD,CONTACTED" },
   ];
 
-  // ── Upcoming tasks (today + 7 days) ────────────────────────────────────
+  // ── Upcoming tasks (today + 7 days) — always scoped to current user ──
   const upcomingTasks = await prisma.task.findMany({
     where: {
       date: { gte: todayStr, lte: in7Days },
-      lead: baseWhere,
+      lead: { assignedToId: userId },
     },
     include: {
       lead: { select: { id: true, storeName: true, district: true } },
