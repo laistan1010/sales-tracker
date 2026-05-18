@@ -66,8 +66,10 @@ export function ReviewSection({
   const [selectedIssues, setSelectedIssues] = useState<string[]>(
     initialIssues ? initialIssues.split(",").filter(Boolean) : []
   );
-  const [notes,      setNotes]      = useState(initialNotes ?? "");
-  const [showReport, setShowReport] = useState(!!(initialRating || initialGaodeRating || initialIssues));
+  const [notes,       setNotes]      = useState(initialNotes ?? "");
+  const [showReport,  setShowReport] = useState(!!(initialRating || initialGaodeRating || initialIssues));
+  const [reportLang,  setReportLang] = useState<"zh" | "en">("zh");
+  const isEN = reportLang === "en";
 
   const boundAction = updateLeadReview.bind(null, leadId);
   const [state, formAction, isPending] = useActionState(boundAction, {});
@@ -138,11 +140,9 @@ export function ReviewSection({
   const ratingValid = rating !== "" && !isNaN(ratingNum);
   const ratingTier  =
     ratingNum >= 4.2 ? "good" : ratingNum >= 3.7 ? "warn" : "danger";
-  const tierLabel   = ratingTier === "good"
-    ? "✅ 表現優異"
-    : ratingTier === "warn"
-    ? "⚠️ 表現平穩，具備優化潛力"
-    : "🔴 急需改善";
+  const tierLabel = isEN
+    ? ratingTier === "good" ? "✅ Excellent" : ratingTier === "warn" ? "⚠️ Has Potential" : "🔴 Needs Improvement"
+    : ratingTier === "good" ? "✅ 表現優異"  : ratingTier === "warn" ? "⚠️ 表現平穩，具備優化潛力" : "🔴 急需改善";
   const tierChipCls = {
     good:   "bg-green-50  border-green-300  text-green-700  dark:bg-green-950/60  dark:border-green-700  dark:text-green-400",
     warn:   "bg-yellow-50 border-yellow-300 text-yellow-700 dark:bg-yellow-950/60 dark:border-yellow-700 dark:text-yellow-400",
@@ -161,9 +161,9 @@ export function ReviewSection({
   const gaodeShowInReport = gaodeValid || gaodeUnregistered;
   const gaodeTier         = gaodeNum >= 4.2 ? "good" : gaodeNum >= 3.7 ? "warn" : "danger";
   const gaodeBigNumCls    = { good: "text-green-400", warn: "text-yellow-400", danger: "text-red-400" }[gaodeTier];
-  const gaodeTierLabel    =
-    gaodeTier === "good"   ? "✅ 表現優異" :
-    gaodeTier === "warn"   ? "⚠️ 具備潛力" : "🔴 急需改善";
+  const gaodeTierLabel = isEN
+    ? gaodeTier === "good" ? "✅ Excellent" : gaodeTier === "warn" ? "⚠️ Has Potential" : "🔴 Needs Improvement"
+    : gaodeTier === "good" ? "✅ 表現優異"  : gaodeTier === "warn" ? "⚠️ 具備潛力"      : "🔴 急需改善";
 
   const hasData = ratingValid || gaodeShowInReport || selectedIssues.length > 0;
 
@@ -189,6 +189,43 @@ export function ReviewSection({
     solTitle:    "我們的解決方案",
     solBody:     "專業數碼營銷提升服務 — 優化 Google Maps 評分管理、統一網上資訊、建立社群平台、打造吸引餐牌相片，全面堪塞以上漏洞。",
     waBtn:       "💬 一鍵分享報告至 WhatsApp",
+  };
+
+  // ── Report card display strings (language-aware) ─────────────────
+  const R = isEN ? {
+    reportBadge:           "DIGITAL MARKETING HEALTH AUDIT",
+    reportShop:            "Business Name",
+    reportGMaps:           "Google Maps Rating",
+    reportGaode:           "Amap Gaode Maps Rating (Mainland Visitors)",
+    issueCount:            (n: number) => n + " Digital Marketing Issue" + (n > 1 ? "s" : "") + " Found",
+    warning:               "Based on big data analysis, unoptimised business profiles are estimated to cause up to",
+    warningPct:            "15% – 20%",
+    warningEnd:            "customer loss.",
+    solTitle:              "Our Solution",
+    solBody:               "Professional digital marketing enhancement — Google Maps review management, unified online presence, social media setup, and professional menu photography to address all identified gaps.",
+    gaodeUnregistered:     "No Gaode Maps Business Profile",
+    gaodeUnregisteredBadge:"❌ Zero Mainland Visitor Exposure",
+    issueLabels: {
+      missing_info:     "Incomplete Business Info (No Hours / Phone Number)",
+      negative_reviews: "Negative Reviews (Unaddressed for 3+ Months)",
+      lacking_reviews:  "Lack of Recent Reviews (Search Ranking Dropping)",
+      missing_menu:     "No Clear Online Menu (Customers Lost)",
+      no_social_media:  "No Social Media Presence (Missing Youth Market)",
+    } as Record<string, string>,
+  } : {
+    reportBadge:           S.reportBadge,
+    reportShop:            S.reportShop,
+    reportGMaps:           S.reportGMaps,
+    reportGaode:           S.reportGaode,
+    issueCount:            S.issueCount,
+    warning:               S.warning,
+    warningPct:            S.warningPct,
+    warningEnd:            S.warningEnd,
+    solTitle:              S.solTitle,
+    solBody:               S.solBody,
+    gaodeUnregistered:     "未建立的高德地圖商戶頁面",
+    gaodeUnregisteredBadge:"❌ 內地客源曝光空白",
+    issueLabels:           ISSUE_LABELS as Record<string, string>,
   };
 
   return (
@@ -311,11 +348,26 @@ export function ReviewSection({
 
           {/* Header */}
           <div className="bg-gradient-to-br from-red-950 via-zinc-900 to-zinc-950 px-5 py-5">
-            <div className="flex items-center gap-1.5 text-red-500 text-[10px] font-bold uppercase tracking-widest mb-3">
-              <AlertTriangle className="h-3.5 w-3.5" />
-              {S.reportBadge}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-1.5 text-red-500 text-[10px] font-bold uppercase tracking-widest">
+                <AlertTriangle className="h-3.5 w-3.5" />
+                {R.reportBadge}
+              </div>
+              {/* Language toggle */}
+              <div className="flex rounded-lg overflow-hidden border border-white/20 text-[11px] font-bold">
+                <button
+                  type="button"
+                  onClick={() => setReportLang("zh")}
+                  className={cn("px-2.5 py-1 transition-colors", !isEN ? "bg-white text-zinc-900" : "bg-white/10 text-white/60 hover:bg-white/20")}
+                >中</button>
+                <button
+                  type="button"
+                  onClick={() => setReportLang("en")}
+                  className={cn("px-2.5 py-1 transition-colors", isEN ? "bg-white text-zinc-900" : "bg-white/10 text-white/60 hover:bg-white/20")}
+                >EN</button>
+              </div>
             </div>
-            <p className="text-zinc-500 text-xs mb-0.5">{S.reportShop}</p>
+            <p className="text-zinc-500 text-xs mb-0.5">{R.reportShop}</p>
             <h3 className="text-white text-xl font-black">{storeName}</h3>
 
             {/* Rating grid — each engine gets its own sub-card */}
@@ -327,7 +379,7 @@ export function ReviewSection({
                 {/* Google Maps sub-card */}
                 {ratingValid && (
                   <div className="rounded-xl bg-white/5 border border-white/10 p-3 space-y-1.5">
-                    <p className="text-zinc-400 text-[11px] font-medium">{S.reportGMaps}</p>
+                    <p className="text-zinc-400 text-[11px] font-medium">{R.reportGMaps}</p>
                     <div className="flex items-end gap-2 flex-wrap">
                       <span className={cn("text-4xl font-black tabular-nums leading-none", bigNumCls)}>
                         {rating}
@@ -357,13 +409,13 @@ export function ReviewSection({
                       "text-[11px] font-medium",
                       gaodeUnregistered ? "text-rose-400" : "text-zinc-400"
                     )}>
-                      {S.reportGaode}
+                      {R.reportGaode}
                     </p>
                     {gaodeUnregistered ? (
                       <>
-                        <p className="text-rose-300 text-xl font-black leading-snug">未建立的高德地圖商戶頁面</p>
+                        <p className="text-rose-300 text-xl font-black leading-snug">{R.gaodeUnregistered}</p>
                         <span className="inline-block text-[11px] font-bold px-2 py-0.5 rounded-md bg-rose-900/60 text-rose-300 border border-rose-700/50">
-                          ❌ 內地客源曝光空白
+                          {R.gaodeUnregisteredBadge}
                         </span>
                       </>
                     ) : (
@@ -394,13 +446,13 @@ export function ReviewSection({
           {selectedIssues.length > 0 && (
             <div className="bg-zinc-950 px-5 py-4 space-y-3">
               <p className="text-red-500 text-[10px] font-bold uppercase tracking-widest">
-                {S.issueCount(selectedIssues.length)}
+                {R.issueCount(selectedIssues.length)}
               </p>
               {selectedIssues.map(code => (
                 <div key={code} className="flex items-start gap-2.5">
                   <span className="text-red-600 font-black text-base leading-none mt-0.5">&#10005;</span>
                   <p className="text-zinc-200 text-sm font-medium leading-snug">
-                    {ISSUE_LABELS[code]}
+                    {R.issueLabels[code]}
                   </p>
                 </div>
               ))}
@@ -410,9 +462,9 @@ export function ReviewSection({
           {/* Warning banner */}
           <div className="bg-gradient-to-r from-red-900/90 to-red-950/90 border-t border-red-800 px-5 py-4">
             <p className="text-red-200 text-sm font-bold leading-relaxed">
-              {S.warning}{" "}
-              <span className="text-white text-base">{S.warningPct}</span>{" "}
-              {S.warningEnd}
+              {R.warning}{" "}
+              <span className="text-white text-base">{R.warningPct}</span>{" "}
+              {R.warningEnd}
             </p>
           </div>
 
@@ -421,8 +473,8 @@ export function ReviewSection({
             <div className="flex items-start gap-3">
               <ShieldCheck className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
               <div>
-                <p className="text-green-400 text-sm font-bold">{S.solTitle}</p>
-                <p className="text-zinc-400 text-xs mt-1 leading-relaxed">{S.solBody}</p>
+                <p className="text-green-400 text-sm font-bold">{R.solTitle}</p>
+                <p className="text-zinc-400 text-xs mt-1 leading-relaxed">{R.solBody}</p>
               </div>
             </div>
             {notes && (
