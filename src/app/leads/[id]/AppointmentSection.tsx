@@ -71,18 +71,15 @@ export function AppointmentSection({ leadId, initialDate, initialTime, initialNo
 
   return (
     <section id="appointment-section" className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold">📅 下次跟進預約</h2>
-        <Button
-          size="sm"
-          variant="outline"
-          className="gap-1.5 h-8 text-xs"
-          onClick={() => setOpen(true)}
-        >
-          <CalendarDays className="h-3.5 w-3.5" />
-          {hasAppt ? "修改預約" : "設定預約"}
-        </Button>
-      </div>
+      <h2 className="text-base font-semibold">📅 下次跟進預約</h2>
+      <Button
+        variant="outline"
+        className="w-full h-12 gap-2 text-sm font-semibold border-2 border-amber-400 text-amber-700 bg-amber-50 hover:bg-amber-100 active:bg-amber-200"
+        onClick={() => setOpen(true)}
+      >
+        <CalendarDays className="h-4 w-4" />
+        {hasAppt ? "修改預約" : "設定下次跟進預約"}
+      </Button>
 
       {/* ── Display ─────────────────────────────────────────────── */}
       {!hasAppt ? (

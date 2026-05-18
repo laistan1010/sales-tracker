@@ -85,13 +85,6 @@ export function QuickLog({ leadId }: { leadId: string }) {
             </button>
           ))}
         </div>
-        <button
-          onClick={() => document.getElementById("appointment-section")?.scrollIntoView({ behavior: "smooth", block: "center" })}
-          className="w-full flex items-center justify-center gap-2 rounded-2xl border-2 border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 active:bg-amber-200 py-3.5 font-medium transition-all"
-        >
-          <span className="text-xl leading-none">📅</span>
-          <span className="text-sm font-semibold">約 Meeting / 設定下次跟進</span>
-        </button>
       </section>
 
       <Dialog open={open} onOpenChange={setOpen}>
