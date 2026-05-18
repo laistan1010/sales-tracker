@@ -159,13 +159,13 @@ export function ContactSection({ leadId, contacts }: Props) {
               <Input name="phone" placeholder="例：9123 4567" inputMode="tel" />
             </div>
 
-            <DialogFooter className="gap-2 pt-1">
-              <DialogClose asChild>
-                <Button type="button" variant="outline" className="flex-1">取消</Button>
-              </DialogClose>
-              <Button type="submit" disabled={isPending} className="flex-1">
+            <DialogFooter className="flex-col gap-2 pt-2">
+              <Button type="submit" disabled={isPending} className="w-full h-14 text-base font-bold bg-green-600 hover:bg-green-500 active:bg-green-700 text-white">
                 {isPending ? "儲存中…" : "儲存"}
               </Button>
+              <DialogClose asChild>
+                <Button type="button" variant="outline" className="w-full h-14 text-base font-bold border-red-400 text-red-500 hover:bg-red-50 active:bg-red-100">取消</Button>
+              </DialogClose>
             </DialogFooter>
           </form>
         </DialogContent>
