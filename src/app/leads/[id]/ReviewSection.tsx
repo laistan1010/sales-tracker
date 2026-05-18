@@ -167,6 +167,20 @@ export function ReviewSection({
 
   const hasData = ratingValid || gaodeShowInReport || selectedIssues.length > 0;
 
+  // Yellow theme when all available ratings are healthy (≥ 4.0); unregistered Amap counts as unhealthy
+  const isHealthy = hasData &&
+    (!ratingValid || ratingNum >= 4.0) &&
+    (!gaodeShowInReport || (gaodeValid && gaodeNum >= 4.0));
+
+  const C = {
+    border:        isHealthy ? "border-amber-600"                        : "border-red-700",
+    shadow:        isHealthy ? "shadow-amber-950/40"                     : "shadow-red-950/40",
+    headerBg:      isHealthy ? "from-amber-950 via-zinc-900 to-zinc-950" : "from-red-950 via-zinc-900 to-zinc-950",
+    accent:        isHealthy ? "text-amber-400"                          : "text-red-500",
+    warningGrad:   isHealthy ? "from-amber-900/90 to-amber-950/90"       : "from-red-900/90 to-red-950/90",
+    warningBorder: isHealthy ? "border-amber-800"                        : "border-red-800",
+  };
+
   // ── Display strings (rendered by browser, encoding-safe in JSX) ─────
   const S = {
     sectionTitle:  "🔥 數碼營銷健康審查報告",
@@ -344,12 +358,12 @@ export function ReviewSection({
 
       {/* ── Report card ─────────────────────────────────────────── */}
       {showReport && hasData && (
-        <div className="rounded-2xl overflow-hidden border-2 border-red-700 shadow-xl shadow-red-950/40">
+        <div className={cn("rounded-2xl overflow-hidden border-2 shadow-xl", C.border, C.shadow)}>
 
           {/* Header */}
-          <div className="bg-gradient-to-br from-red-950 via-zinc-900 to-zinc-950 px-5 py-5">
+          <div className={cn("bg-gradient-to-br px-5 py-5", C.headerBg)}>
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-1.5 text-red-500 text-[10px] font-bold uppercase tracking-widest">
+              <div className={cn("flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest", C.accent)}>
                 <AlertTriangle className="h-3.5 w-3.5" />
                 {R.reportBadge}
               </div>
@@ -445,7 +459,7 @@ export function ReviewSection({
           {/* Issues */}
           {selectedIssues.length > 0 && (
             <div className="bg-zinc-950 px-5 py-4 space-y-3">
-              <p className="text-red-500 text-[10px] font-bold uppercase tracking-widest">
+              <p className={cn("text-[10px] font-bold uppercase tracking-widest", C.accent)}>
                 {R.issueCount(selectedIssues.length)}
               </p>
               {selectedIssues.map(code => (
@@ -460,7 +474,7 @@ export function ReviewSection({
           )}
 
           {/* Warning banner */}
-          <div className="bg-gradient-to-r from-red-900/90 to-red-950/90 border-t border-red-800 px-5 py-4">
+          <div className={cn("bg-gradient-to-r border-t px-5 py-4", C.warningGrad, C.warningBorder)}>
             <p className="text-red-200 text-sm font-bold leading-relaxed">
               {R.warning}{" "}
               <span className="text-white text-base">{R.warningPct}</span>{" "}
