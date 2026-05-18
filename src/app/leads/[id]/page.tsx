@@ -57,6 +57,7 @@ export default async function LeadDetailPage({ params }: PageProps) {
           <div className="flex items-center gap-2 shrink-0">
             <EditLeadModal
               leadId={lead.id}
+              storeName={lead.storeName}
               district={lead.district}
               address={lead.address}
               googleMapsUrl={lead.googleMapsUrl}

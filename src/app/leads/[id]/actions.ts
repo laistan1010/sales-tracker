@@ -102,6 +102,7 @@ export async function updateLead(
   _prev: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  const storeName     = (formData.get("storeName")     as string | null)?.trim() || undefined;
   const district      = (formData.get("district")      as string | null)?.trim() || undefined;
   const address       = (formData.get("address")       as string | null)?.trim() || null;
   const googleMapsUrl = (formData.get("googleMapsUrl") as string | null)?.trim() || null;
@@ -111,7 +112,8 @@ export async function updateLead(
   await prisma.lead.update({
     where: { id: leadId },
     data: {
-      ...(district && { district }),
+      ...(storeName && { storeName }),
+      ...(district  && { district }),
       address,
       googleMapsUrl,
       openRiceUrl,

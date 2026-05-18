@@ -27,6 +27,7 @@ const HK_DISTRICTS = [
 
 interface Props {
   leadId: string;
+  storeName: string;
   district: string;
   address: string | null;
   googleMapsUrl: string | null;
@@ -38,6 +39,7 @@ const initial = {};
 
 export function EditLeadModal({
   leadId,
+  storeName,
   district,
   address,
   googleMapsUrl,
@@ -71,6 +73,17 @@ export function EditLeadModal({
           </DialogHeader>
 
           <form action={formAction} className="space-y-4">
+            {/* Store name */}
+            <div className="space-y-1">
+              <Label>商家名稱 <span className="text-destructive">*</span></Label>
+              <Input
+                name="storeName"
+                defaultValue={storeName}
+                placeholder="例：麥當勞 銅鑼灣店"
+                required
+              />
+            </div>
+
             {/* District */}
             <div className="space-y-1">
               <Label>區份 / 地鐵站</Label>
