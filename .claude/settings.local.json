@@ -15,7 +15,9 @@
       "Bash(git commit -m 'fix: treat Amap rating 0 as unregistered, update display text \\(zh+en\\) *)",
       "Bash(git commit -m 'chore: update settings *)",
       "Bash(git commit -m 'feat: amber report card theme when all ratings ≥ 4.0 *)",
-      "Bash(git commit -m 'feat: increase report card text sizes throughout for readability *)"
+      "Bash(git commit -m 'feat: increase report card text sizes throughout for readability *)",
+      "Bash(git commit -m 'fix: reduce badge to text-xs \\(1 line\\), Amap unregistered to text-sm \\(2 lines\\) *)",
+      "Bash(git commit -m 'feat: clickable dashboard stat cards link to filtered leads list *)"
     ]
   }
 }

@@ -19,18 +19,21 @@ export default async function LeadsPage({ searchParams }: PageProps) {
   const filterType = by === "status" ? "status" : "industry";
   const filterValue = filter || "all";
 
+  const filterValues = filterValue !== "all" ? filterValue.split(",") : [];
   const validFilter =
     filterValue === "all" ||
-    (filterType === "industry"
-      ? (ALL_INDUSTRIES as string[]).includes(filterValue)
-      : (ALL_STATUSES as string[]).includes(filterValue));
+    filterValues.every(v =>
+      filterType === "industry"
+        ? (ALL_INDUSTRIES as string[]).includes(v)
+        : (ALL_STATUSES as string[]).includes(v)
+    );
 
   const rbacWhere = isAdmin ? {} : { assignedToId: userId };
   const enumFilter =
-    validFilter && filterValue !== "all"
+    validFilter && filterValues.length > 0
       ? filterType === "industry"
-        ? { industry: filterValue as Industry }
-        : { status: filterValue as LeadStatus }
+        ? { industry: { in: filterValues as Industry[] } }
+        : { status: { in: filterValues as LeadStatus[] } }
       : {};
 
   const leads = await prisma.lead.findMany({
