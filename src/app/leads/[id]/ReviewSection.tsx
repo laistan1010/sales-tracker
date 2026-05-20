@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useActionState, useState } from "react";
-import { ShieldCheck, Zap } from "lucide-react";
+import { ShieldCheck, Zap, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -197,11 +197,11 @@ export function ReviewSection({
     reportGMaps:  "Google Maps 評分",
     reportGaode:  "Amap 高德地圖評分（內地旅客）",
     issueCount:  (n: number) => "發現 " + n + " 個數碼營銷漏洞",
-    warning:     "根據大數據分析，未經優化的商戶檔案預計將導致高達",
+    warning:     "根據大數據分析，您未經優化的商戶檔案預計將導致高達",
     warningPct:  "15% – 20%",
     warningEnd:  "顧客流失。",
     solTitle:    "我們的解決方案",
-    solBody:     "專業數碼營銷提升服務 — 優化 Google Maps 評分管理、統一網上資訊、建立社群平台、打造吸引餐牌相片，全面堪塞以上漏洞。",
+    solBody:     "專業數碼營銷提升服務 — 優化 Google Maps 及 Amap 評分管理、統一網上資訊、建立社群平台、打造吸引餐牌相片，全面堪塞以上漏洞。",
     waBtn:       "💬 一鍵分享報告至 WhatsApp",
   };
 
@@ -212,11 +212,11 @@ export function ReviewSection({
     reportGMaps:           "Google Maps Rating",
     reportGaode:           "Amap Rating (Mainland Visitors)",
     issueCount:            (n: number) => n + " Digital Marketing Issue" + (n > 1 ? "s" : "") + " Found",
-    warning:               "Based on big data analysis, unoptimised business profiles are estimated to cause up to",
+    warning:               "Based on big data analysis, your unoptimised business profile is estimated to cause up to",
     warningPct:            "15% – 20%",
     warningEnd:            "customer loss.",
     solTitle:              "Our Solution",
-    solBody:               "Professional digital marketing enhancement — Google Maps review management, unified online presence, social media setup, and professional menu photography to address all identified gaps.",
+    solBody:               "Professional digital marketing enhancement — Google Maps and Amap review management, unified online presence, social media setup, and professional menu photography to address all identified gaps.",
     gaodeUnregistered:     "No Amap Merchant Profile Set Up",
     gaodeUnregisteredBadge:"❌ Zero Mainland Visitor Exposure",
     issueLabels: {
@@ -462,14 +462,14 @@ export function ReviewSection({
 
           {/* Issues */}
           {selectedIssues.length > 0 && (
-            <div className="bg-zinc-950 px-5 py-5 space-y-3">
-              <p className={cn("text-sm font-bold uppercase tracking-widest", C.accent)}>
+            <div className="bg-zinc-950 px-5 py-4 space-y-2">
+              <p className={cn("text-xs font-bold uppercase tracking-widest", C.accent)}>
                 {R.issueCount(selectedIssues.length)}
               </p>
               {selectedIssues.map(code => (
-                <div key={code} className="flex items-start gap-2.5">
-                  <span className="text-red-600 font-black text-lg leading-none mt-0.5">&#10005;</span>
-                  <p className="text-zinc-200 text-base font-medium leading-snug">
+                <div key={code} className="flex items-start gap-2">
+                  <span className="text-red-500 font-black text-sm leading-none mt-0.5">&#10005;</span>
+                  <p className="text-zinc-300 text-sm font-medium leading-snug">
                     {R.issueLabels[code]}
                   </p>
                 </div>
@@ -479,11 +479,14 @@ export function ReviewSection({
 
           {/* Warning banner */}
           <div className={cn("bg-gradient-to-r border-t px-5 py-5", C.warningGrad, C.warningBorder)}>
-            <p className="text-red-200 text-base font-bold leading-relaxed">
-              {R.warning}{" "}
-              <span className="text-white text-lg">{R.warningPct}</span>{" "}
-              {R.warningEnd}
-            </p>
+            <div className="flex items-start gap-2.5">
+              <TriangleAlert className="h-5 w-5 shrink-0 text-red-300 mt-0.5" />
+              <p className="text-red-200 text-base font-bold leading-relaxed">
+                {R.warning}{" "}
+                <span className="text-white text-lg">{R.warningPct}</span>{" "}
+                {R.warningEnd}
+              </p>
+            </div>
           </div>
 
           {/* Solution */}
