@@ -13,6 +13,122 @@ import { Upload, FileSpreadsheet, CheckCircle2, XCircle, AlertTriangle } from "l
 import { bulkCreateLeads, type BulkLeadRow } from "./actions";
 import { INDUSTRY_LABELS } from "@/lib/constants";
 
+// ── English → Chinese district translation ───────────────────────────────────
+
+const EN_TO_ZH_DISTRICT: Record<string, string> = {
+  // ── 港島 ──────────────────────────────────────────────────────────────
+  "central":              "中環",
+  "admiralty":            "金鐘",
+  "wan chai":             "灣仔",
+  "wanchai":              "灣仔",
+  "causeway bay":         "銅鑼灣",
+  "tin hau":              "天后",
+  "tai hang":             "大坑",
+  "happy valley":         "跑馬地",
+  "north point":          "北角",
+  "quarry bay":           "鰂魚涌",
+  "taikoo":               "太古",
+  "tai koo":              "太古",
+  "sai wan ho":           "西灣河",
+  "shau kei wan":         "筲箕灣",
+  "chai wan":             "柴灣",
+  "kennedy town":         "堅尼地城",
+  "sai ying pun":         "西營盤",
+  "sheung wan":           "上環",
+  "western":              "西環",
+  "aberdeen":             "香港仔",
+  "stanley":              "赤柱",
+  "repulse bay":          "淺水灣",
+  "pok fu lam":           "薄扶林",
+  "pokfulam":             "薄扶林",
+  "wong chuk hang":       "黃竹坑",
+  "ap lei chau":          "鴨脷洲",
+  "south horizons":       "海怡半島",
+  "mid levels":           "半山",
+  "mid-levels":           "半山",
+  "the peak":             "山頂",
+  "peak":                 "山頂",
+  // ── 九龍 ──────────────────────────────────────────────────────────────
+  "tsim sha tsui":        "尖沙咀",
+  "tst":                  "尖沙咀",
+  "east tsim sha tsui":   "尖東",
+  "jordan":               "佐敦",
+  "yau ma tei":           "油麻地",
+  "yaumatei":             "油麻地",
+  "mong kok":             "旺角",
+  "mongkok":              "旺角",
+  "prince edward":        "太子",
+  "sham shui po":         "深水埗",
+  "shamshuipo":           "深水埗",
+  "cheung sha wan":       "長沙灣",
+  "lai chi kok":          "荔枝角",
+  "mei foo":              "美孚",
+  "kowloon city":         "九龍城",
+  "hung hom":             "紅磡",
+  "ho man tin":           "何文田",
+  "kowloon tong":         "九龍塘",
+  "lok fu":               "樂富",
+  "wong tai sin":         "黃大仙",
+  "diamond hill":         "鑽石山",
+  "ngau tau kok":         "牛頭角",
+  "kwun tong":            "觀塘",
+  "lam tin":              "藍田",
+  "tiu keng leng":        "調景嶺",
+  "yau tong":             "油塘",
+  "to kwa wan":           "土瓜灣",
+  "san po kong":          "新蒲崗",
+  "tai kok tsui":         "大角咀",
+  "olympic":              "奧運",
+  "nam cheong":           "南昌",
+  "kowloon bay":          "九龍灣",
+  "choi hung":            "彩虹",
+  // ── 新界 ──────────────────────────────────────────────────────────────
+  "tsuen wan":            "荃灣",
+  "kwai fong":            "葵芳",
+  "kwai chung":           "葵涌",
+  "kwai hing":            "葵興",
+  "tsing yi":             "青衣",
+  "tuen mun":             "屯門",
+  "yuen long":            "元朗",
+  "tin shui wai":         "天水圍",
+  "sheung shui":          "上水",
+  "fanling":              "粉嶺",
+  "tai po":               "大埔",
+  "sha tin":              "沙田",
+  "shatin":               "沙田",
+  "fo tan":               "火炭",
+  "university":           "大學",
+  "ma on shan":           "馬鞍山",
+  "tai wai":              "大圍",
+  "sai kung":             "西貢",
+  "tseung kwan o":        "將軍澳",
+  "hang hau":             "坑口",
+  "po lam":               "寶琳",
+  "lohas park":           "康城",
+  "lai king":             "荔景",
+  "siu hong":             "兆康",
+  "long ping":            "朗屏",
+  "kam sheung road":      "錦上路",
+  "wu kai sha":           "烏溪沙",
+  // ── 離島 ──────────────────────────────────────────────────────────────
+  "tung chung":           "東涌",
+  "lantau":               "大嶼山",
+  "cheung chau":          "長洲",
+  "lamma":                "南丫島",
+  "lamma island":         "南丫島",
+  "peng chau":            "坪洲",
+  "discovery bay":        "愉景灣",
+  "mui wo":               "梅窩",
+  "tai o":                "大澳",
+};
+
+function translateDistrict(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return trimmed;
+  const lower = trimmed.toLowerCase();
+  return EN_TO_ZH_DISTRICT[lower] ?? trimmed;
+}
+
 // ── Column auto-detection ────────────────────────────────────────────────────
 
 const FIELD_ALIASES: Record<string, string[]> = {
@@ -95,7 +211,7 @@ async function parseFile(
     const storeName   = cell(r, "storeName");
     const industryRaw = cell(r, "industry");
     const industry    = mapIndustry(industryRaw);
-    const district    = cell(r, "district");
+    const district    = translateDistrict(cell(r, "district"));
 
     const errors: string[] = [];
     if (!storeName) errors.push("缺少店名");
