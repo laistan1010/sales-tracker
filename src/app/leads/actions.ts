@@ -53,3 +53,64 @@ export async function deleteLead(leadId: string): Promise<ActionState> {
   revalidatePath("/");
   return { success: true };
 }
+
+// ── 批量匯入 ──────────────────────────────────────────────────────────────────
+export type BulkLeadRow = {
+  storeName: string;
+  industry: string;
+  district: string;
+  address?: string;
+  googleMapsUrl?: string;
+  gaodeMapsUrl?: string;
+  openRiceUrl?: string;
+  picName?: string;
+};
+
+export async function bulkCreateLeads(
+  rows: BulkLeadRow[]
+): Promise<{ error?: string; created: number; skipped: number }> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "未登入，請重新登入", created: 0, skipped: 0 };
+
+  let created = 0;
+  let skipped = 0;
+
+  for (const row of rows) {
+    const storeName = row.storeName?.trim();
+    const district  = row.district?.trim();
+    const industry  = row.industry?.trim();
+
+    if (!storeName || !district || !(ALL_INDUSTRIES as string[]).includes(industry)) {
+      skipped++;
+      continue;
+    }
+
+    try {
+      const lead = await prisma.lead.create({
+        data: {
+          storeName,
+          industry:     industry as Industry,
+          district,
+          address:      row.address?.trim()       || undefined,
+          googleMapsUrl: row.googleMapsUrl?.trim() || undefined,
+          gaodeMapsUrl:  row.gaodeMapsUrl?.trim()  || undefined,
+          openRiceUrl:   row.openRiceUrl?.trim()   || undefined,
+          assignedToId: session.user.id,
+        },
+      });
+
+      if (row.picName?.trim()) {
+        await prisma.contact.create({
+          data: { name: row.picName.trim(), leadId: lead.id },
+        });
+      }
+
+      created++;
+    } catch {
+      skipped++;
+    }
+  }
+
+  revalidatePath("/leads");
+  return { created, skipped };
+}

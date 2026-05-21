@@ -18,12 +18,12 @@ export const STATUS_LABELS: Record<LeadStatus, { en: string; zh: string; color: 
 };
 
 export const ACTIVITY_LABELS: Record<ActivityType, { en: string; zh: string; icon: string; color: string }> = {
-  WALK_IN:  { en: "Walk-in",        zh: "親自拜訪",     icon: "🚶", color: "bg-emerald-100 text-emerald-700 border-emerald-300" },
-  PHONE:    { en: "Phone Call",     zh: "打電話",       icon: "📞", color: "bg-blue-100 text-blue-700 border-blue-300" },
-  WHATSAPP: { en: "WhatsApp",       zh: "WhatsApp",     icon: "💬", color: "bg-green-100 text-green-700 border-green-300" },
+  WALK_IN:  { en: "Walk-in",         zh: "親自拜訪",      icon: "🚶", color: "bg-emerald-100 text-emerald-700 border-emerald-300" },
+  PHONE:    { en: "Phone Call",      zh: "打電話",        icon: "📞", color: "bg-blue-100 text-blue-700 border-blue-300" },
+  WHATSAPP: { en: "WhatsApp",        zh: "WhatsApp",      icon: "💬", color: "bg-green-100 text-green-700 border-green-300" },
   PIPELINE: { en: "Pipeline Update", zh: "Pipeline 更新", icon: "🔄", color: "bg-violet-100 text-violet-700 border-violet-300" },
   MEETING:  { en: "Meeting",         zh: "面談",          icon: "🤝", color: "bg-indigo-100 text-indigo-700 border-indigo-300" },
-  EMAIL:    { en: "Email",           zh: "電郵",           icon: "📧", color: "bg-sky-100 text-sky-700 border-sky-300" },
+  EMAIL:    { en: "Email",           zh: "電郵",          icon: "📧", color: "bg-sky-100 text-sky-700 border-sky-300" },
 };
 
 export const TASK_TYPE_META: Record<TaskType, { zh: string; icon: string; activityType: ActivityType }> = {

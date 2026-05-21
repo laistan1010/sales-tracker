@@ -5,6 +5,7 @@ import type { Industry, LeadStatus } from "@/generated/prisma/enums";
 import { ALL_INDUSTRIES, ALL_STATUSES } from "@/lib/constants";
 import { LeadsClient } from "./LeadsClient";
 import { CreateLeadModal } from "./CreateLeadModal";
+import { ImportLeadsModal } from "./ImportLeadsModal";
 
 interface PageProps {
   searchParams: Promise<{ by?: string; filter?: string }>;
@@ -52,8 +53,10 @@ export default async function LeadsPage({ searchParams }: PageProps) {
             <p className="text-xs text-muted-foreground mt-0.5">僅顯示你的商戶</p>
           )}
         </div>
-        {/* CreateLeadModal is a Client Component — renders the button + dialog */}
-        <CreateLeadModal />
+        <div className="flex gap-2 shrink-0">
+          <ImportLeadsModal />
+          <CreateLeadModal />
+        </div>
       </div>
 
       <Suspense>
