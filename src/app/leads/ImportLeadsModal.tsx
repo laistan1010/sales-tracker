@@ -132,7 +132,7 @@ export function ImportLeadsModal() {
   const [parseError, setParseError]   = useState<string | null>(null);
   const [isDragging, setIsDragging]   = useState(false);
   const [isImporting, setIsImporting] = useState(false);
-  const [result, setResult]           = useState<{ created: number; skipped: number } | null>(null);
+  const [result, setResult]           = useState<{ created: number; updated: number; skipped: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = useCallback(async (file: File) => {
@@ -357,11 +357,14 @@ export function ImportLeadsModal() {
                 <div className="text-center">
                   <p className="font-semibold text-lg">匯入完成！</p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    成功建立{" "}
-                    <span className="font-bold text-green-600">{result.created}</span>{" "}
-                    個商戶
+                    {result.created > 0 && (
+                      <>新增 <span className="font-bold text-green-600">{result.created}</span> 個商戶　</>
+                    )}
+                    {result.updated > 0 && (
+                      <>更新 <span className="font-bold text-blue-600">{result.updated}</span> 個商戶　</>
+                    )}
                     {result.skipped > 0 && (
-                      <>，跳過 <span className="font-bold text-red-500">{result.skipped}</span> 行</>
+                      <>跳過 <span className="font-bold text-red-500">{result.skipped}</span> 行</>
                     )}
                   </p>
                 </div>

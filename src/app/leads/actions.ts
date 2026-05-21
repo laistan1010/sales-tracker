@@ -68,17 +68,19 @@ export type BulkLeadRow = {
 
 export async function bulkCreateLeads(
   rows: BulkLeadRow[]
-): Promise<{ error?: string; created: number; skipped: number }> {
+): Promise<{ error?: string; created: number; updated: number; skipped: number }> {
   const session = await auth();
-  if (!session?.user?.id) return { error: "未登入，請重新登入", created: 0, skipped: 0 };
+  if (!session?.user?.id)
+    return { error: "未登入，請重新登入", created: 0, updated: 0, skipped: 0 };
 
   let created = 0;
+  let updated = 0;
   let skipped = 0;
 
   for (const row of rows) {
-    const storeName = row.storeName?.trim();
-    const district  = row.district?.trim();
-    const industry  = row.industry?.trim();
+    const storeName   = row.storeName?.trim();
+    const district    = row.district?.trim();
+    const industry    = row.industry?.trim();
 
     if (!storeName || !district || !(ALL_INDUSTRIES as string[]).includes(industry)) {
       skipped++;
@@ -86,31 +88,57 @@ export async function bulkCreateLeads(
     }
 
     try {
-      const lead = await prisma.lead.create({
-        data: {
-          storeName,
-          industry:     industry as Industry,
-          district,
-          address:      row.address?.trim()       || undefined,
-          googleMapsUrl: row.googleMapsUrl?.trim() || undefined,
-          gaodeMapsUrl:  row.gaodeMapsUrl?.trim()  || undefined,
-          openRiceUrl:   row.openRiceUrl?.trim()   || undefined,
-          assignedToId: session.user.id,
-        },
-      });
+      // If a lead with the same storeName already exists, update its URLs/address.
+      // Otherwise create a new lead.
+      const existing = await prisma.lead.findFirst({ where: { storeName } });
 
-      if (row.picName?.trim()) {
-        await prisma.contact.create({
-          data: { name: row.picName.trim(), leadId: lead.id },
+      if (existing) {
+        await prisma.lead.update({
+          where: { id: existing.id },
+          data: {
+            district,
+            industry:      industry as Industry,
+            address:       row.address?.trim()       || existing.address       || undefined,
+            googleMapsUrl: row.googleMapsUrl?.trim() || existing.googleMapsUrl || undefined,
+            gaodeMapsUrl:  row.gaodeMapsUrl?.trim()  || existing.gaodeMapsUrl  || undefined,
+            openRiceUrl:   row.openRiceUrl?.trim()   || existing.openRiceUrl   || undefined,
+          },
         });
+        // Add contact only if none exists yet and a name was provided
+        if (row.picName?.trim()) {
+          const hasContact = await prisma.contact.findFirst({ where: { leadId: existing.id } });
+          if (!hasContact) {
+            await prisma.contact.create({
+              data: { name: row.picName.trim(), leadId: existing.id },
+            });
+          }
+        }
+        updated++;
+      } else {
+        const lead = await prisma.lead.create({
+          data: {
+            storeName,
+            industry:      industry as Industry,
+            district,
+            address:       row.address?.trim()       || undefined,
+            googleMapsUrl: row.googleMapsUrl?.trim() || undefined,
+            gaodeMapsUrl:  row.gaodeMapsUrl?.trim()  || undefined,
+            openRiceUrl:   row.openRiceUrl?.trim()   || undefined,
+            assignedToId:  session.user.id,
+          },
+        });
+        if (row.picName?.trim()) {
+          await prisma.contact.create({
+            data: { name: row.picName.trim(), leadId: lead.id },
+          });
+        }
+        created++;
       }
-
-      created++;
     } catch {
       skipped++;
     }
   }
 
   revalidatePath("/leads");
-  return { created, skipped };
+  return { created, updated, skipped };
 }
