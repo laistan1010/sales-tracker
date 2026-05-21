@@ -54,6 +54,25 @@ export async function deleteLead(leadId: string): Promise<ActionState> {
   return { success: true };
 }
 
+// ── 批量指派 ──────────────────────────────────────────────────────────────────
+export async function assignLeads(
+  leadIds: string[],
+  assignedToId: string
+): Promise<ActionState> {
+  const session = await auth();
+  if (session?.user?.role !== "ADMIN") return { error: "只有管理員可以指派商戶" };
+  if (!leadIds.length || !assignedToId) return { error: "請選擇商戶及負責人" };
+
+  await prisma.lead.updateMany({
+    where: { id: { in: leadIds } },
+    data: { assignedToId },
+  });
+
+  revalidatePath("/leads");
+  revalidatePath("/");
+  return { success: true };
+}
+
 // ── 批量匯入 ──────────────────────────────────────────────────────────────────
 export type BulkLeadRow = {
   storeName: string;

@@ -37,11 +37,14 @@ export default async function LeadsPage({ searchParams }: PageProps) {
         : { status: { in: filterValues as LeadStatus[] } }
       : {};
 
-  const leads = await prisma.lead.findMany({
-    where: { ...rbacWhere, ...enumFilter },
-    include: { assignedTo: true },
-    orderBy: { storeName: "asc" },
-  });
+  const [leads, salesUsers] = await Promise.all([
+    prisma.lead.findMany({
+      where: { ...rbacWhere, ...enumFilter },
+      include: { assignedTo: true },
+      orderBy: { storeName: "asc" },
+    }),
+    isAdmin ? prisma.user.findMany({ orderBy: { name: "asc" } }) : Promise.resolve([]),
+  ]);
 
   return (
     <div className="space-y-4">
@@ -65,6 +68,7 @@ export default async function LeadsPage({ searchParams }: PageProps) {
           filterType={filterType}
           filterValue={validFilter ? filterValue : "all"}
           isAdmin={isAdmin}
+          salesUsers={salesUsers}
         />
       </Suspense>
     </div>
