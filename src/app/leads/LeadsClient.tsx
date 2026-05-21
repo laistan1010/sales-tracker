@@ -75,7 +75,7 @@ function DeleteDialog({
 }
 
 export function LeadsClient({ leads, filterType, filterValue, isAdmin, salesUsers }: Props) {
-  const router = useRouter();
+  const router   = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -83,10 +83,9 @@ export function LeadsClient({ leads, filterType, filterValue, isAdmin, salesUser
   const [deleteTarget, setDeleteTarget]     = useState<LeadWithUser | null>(null);
   const [isPending, startTransition]        = useTransition();
 
-  // ── Selection state ──────────────────────────────────────────────────────────
-  const [selectedIds, setSelectedIds]   = useState<Set<string>>(new Set());
-  const [assignTargetId, setAssignTargetId] = useState("");
-  const [isAssigning, startAssignTransition] = useTransition();
+  const [selectedIds, setSelectedIds]           = useState<Set<string>>(new Set());
+  const [assignTargetId, setAssignTargetId]     = useState("");
+  const [isAssigning, startAssignTransition]    = useTransition();
 
   const setParam = useCallback(
     (key: string, value: string) => {
@@ -101,11 +100,8 @@ export function LeadsClient({ leads, filterType, filterValue, isAdmin, salesUser
   const setFilter = useCallback(
     (value: string) => {
       const params = new URLSearchParams(searchParams.toString());
-      if (value === "all") {
-        params.delete("filter");
-      } else {
-        params.set("filter", value);
-      }
+      if (value === "all") params.delete("filter");
+      else params.set("filter", value);
       router.push(`${pathname}?${params.toString()}`);
     },
     [router, pathname, searchParams]
@@ -148,19 +144,11 @@ export function LeadsClient({ leads, filterType, filterValue, isAdmin, salesUser
 
   const filterOptions =
     filterType === "industry"
-      ? [
-          { value: "all", label: "全部" },
-          ...ALL_INDUSTRIES.map((k) => ({ value: k, label: INDUSTRY_LABELS[k].zh })),
-        ]
-      : [
-          { value: "all", label: "全部" },
-          ...ALL_STATUSES.map((k) => ({ value: k, label: STATUS_LABELS[k].zh })),
-        ];
+      ? [{ value: "all", label: "全部" }, ...ALL_INDUSTRIES.map(k => ({ value: k, label: INDUSTRY_LABELS[k].zh }))]
+      : [{ value: "all", label: "全部" }, ...ALL_STATUSES.map(k => ({ value: k, label: STATUS_LABELS[k].zh }))];
 
   const visibleLeads =
-    districtFilter === "all"
-      ? leads
-      : leads.filter((l) => l.district === districtFilter);
+    districtFilter === "all" ? leads : leads.filter(l => l.district === districtFilter);
 
   const allSelected = visibleLeads.length > 0 && visibleLeads.every(l => selectedIds.has(l.id));
   const hasSelection = selectedIds.size > 0;
@@ -181,19 +169,14 @@ export function LeadsClient({ leads, filterType, filterValue, isAdmin, salesUser
         <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
         <select
           value={districtFilter}
-          onChange={(e) => setDistrictFilter(e.target.value)}
+          onChange={e => setDistrictFilter(e.target.value)}
           className="flex-1 h-9 rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
         >
           <option value="all">全部地鐵站 / 區份</option>
-          {HK_DISTRICTS.map((d) => (
-            <option key={d} value={d}>{d}</option>
-          ))}
+          {HK_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
         </select>
         {districtFilter !== "all" && (
-          <button
-            onClick={() => setDistrictFilter("all")}
-            className="shrink-0 text-xs text-muted-foreground hover:text-foreground underline"
-          >
+          <button onClick={() => setDistrictFilter("all")} className="shrink-0 text-xs text-muted-foreground hover:text-foreground underline">
             清除
           </button>
         )}
@@ -201,15 +184,13 @@ export function LeadsClient({ leads, filterType, filterValue, isAdmin, salesUser
 
       {/* ── Filter type toggle ──────────────────────────────────────── */}
       <div className="flex gap-2 rounded-xl border bg-muted p-1 text-sm font-medium">
-        {(["industry", "status"] as const).map((type) => (
+        {(["industry", "status"] as const).map(type => (
           <button
             key={type}
             onClick={() => setParam("by", type)}
             className={cn(
               "flex-1 rounded-lg py-2 text-center transition-colors",
-              filterType === type
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+              filterType === type ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
             )}
           >
             {type === "industry" ? "行業" : "Pipeline"}
@@ -217,17 +198,16 @@ export function LeadsClient({ leads, filterType, filterValue, isAdmin, salesUser
         ))}
       </div>
 
-      {/* ── Filter value chips ──────────────────────────────────────── */}
+      {/* ── Filter chips ────────────────────────────────────────────── */}
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
         {filterOptions.map(({ value, label }) => {
           const activeSet = filterValue === "all" ? ["all"] : filterValue.split(",");
-          const isActive = activeSet.includes(value) || (value === "all" && filterValue === "all");
-          let chipColor = "";
+          const isActive  = activeSet.includes(value) || (value === "all" && filterValue === "all");
+          let chipColor   = "";
           if (value !== "all" && filterType === "industry")
             chipColor = INDUSTRY_LABELS[value as keyof typeof INDUSTRY_LABELS]?.color ?? "";
           if (value !== "all" && filterType === "status")
             chipColor = STATUS_LABELS[value as LeadStatus]?.color ?? "";
-
           return (
             <button
               key={value}
@@ -245,13 +225,13 @@ export function LeadsClient({ leads, filterType, filterValue, isAdmin, salesUser
         })}
       </div>
 
-      {/* ── Count + select-all (admin) ──────────────────────────────── */}
+      {/* ── Count + select-all ──────────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground">
           {visibleLeads.length} 間商戶
           {districtFilter !== "all" && <span className="ml-1">· {districtFilter}</span>}
           {hasSelection && (
-            <span className="ml-2 font-medium text-primary">
+            <span className="ml-2 font-medium" style={{ color: "#fed7aa" }}>
               · 已選 {selectedIds.size} 間
             </span>
           )}
@@ -262,8 +242,8 @@ export function LeadsClient({ leads, filterType, filterValue, isAdmin, salesUser
             className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             {allSelected
-              ? <><CheckSquare className="h-3.5 w-3.5 text-primary" /> 取消全選</>
-              : <><Square className="h-3.5 w-3.5" /> 全選</>
+              ? <><CheckSquare className="h-3.5 w-3.5" style={{ color: "#fed7aa" }} />取消全選</>
+              : <><Square className="h-3.5 w-3.5" />全選</>
             }
           </button>
         )}
@@ -276,73 +256,82 @@ export function LeadsClient({ leads, filterType, filterValue, isAdmin, salesUser
         </div>
       ) : (
         <ul className="grid grid-cols-2 gap-3">
-          {visibleLeads.map((lead) => {
+          {visibleLeads.map(lead => {
             const statusMeta = STATUS_LABELS[lead.status];
             const isSelected = selectedIds.has(lead.id);
             return (
               <li key={lead.id} className="relative">
-                <Link
-                  href={`/leads/${lead.id}`}
+                <div
                   className={cn(
-                    "flex flex-col gap-1.5 rounded-xl border bg-card p-3 shadow-sm transition-colors active:bg-accent h-full",
-                    isSelected && "border-primary ring-2 ring-primary/30 bg-primary/5"
+                    "rounded-xl border overflow-hidden transition-all",
+                    isSelected
+                      ? "bg-card"
+                      : "bg-card"
                   )}
+                  style={isSelected ? {
+                    borderColor: "#fed7aa",
+                    boxShadow: "0 0 0 2px rgba(253,215,170,0.25)",
+                  } : {}}
                 >
-                  <p className={cn(
-                    "truncate font-semibold text-sm leading-tight",
-                    isAdmin ? "pr-12" : "pr-5"
-                  )}>
-                    {lead.storeName}
-                  </p>
-                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                    <MapPin className="h-3 w-3 shrink-0" />
-                    <span className="truncate">{lead.district}</span>
-                  </span>
-                  <span className={cn(
-                    "self-start inline-flex rounded-full border px-2 py-0.5 text-xs font-medium",
-                    statusMeta.color
-                  )}>
-                    {statusMeta.zh}
-                  </span>
-                  {isAdmin && lead.assignedTo && (
-                    <p className="text-xs text-muted-foreground truncate">
-                      {lead.assignedTo.name}
-                    </p>
-                  )}
-                </Link>
+                  <div className="flex">
+                    {/* ── Checkbox strip (admin only) ── */}
+                    {isAdmin && (
+                      <button
+                        onClick={e => toggleSelect(e, lead.id)}
+                        className={cn(
+                          "flex w-10 shrink-0 items-center justify-center transition-colors border-r",
+                          isSelected
+                            ? "border-r-orange-200/50"
+                            : "border-r-border hover:bg-muted"
+                        )}
+                        style={isSelected ? { background: "rgba(253,215,170,0.08)" } : {}}
+                        aria-label={isSelected ? "取消選擇" : "選擇商戶"}
+                      >
+                        {isSelected ? (
+                          <CheckSquare className="h-4 w-4" style={{ color: "#fed7aa" }} />
+                        ) : (
+                          <Square className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </button>
+                    )}
 
-                {/* Admin controls: checkbox (left) + delete (right) */}
-                {isAdmin && (
-                  <>
-                    {/* Checkbox */}
-                    <button
-                      onClick={(e) => toggleSelect(e, lead.id)}
-                      className={cn(
-                        "absolute top-2.5 left-2.5 flex h-6 w-6 items-center justify-center rounded-md transition-colors",
-                        isSelected
-                          ? "text-primary"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    {/* ── Card content (links to detail) ── */}
+                    <Link
+                      href={`/leads/${lead.id}`}
+                      className="flex flex-col gap-1.5 p-3 flex-1 min-w-0 active:bg-accent"
+                      style={{ paddingRight: isAdmin ? "2rem" : "0.75rem" }}
+                    >
+                      <p className="truncate font-semibold text-sm leading-tight">
+                        {lead.storeName}
+                      </p>
+                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                        <MapPin className="h-3 w-3 shrink-0" />
+                        <span className="truncate">{lead.district}</span>
+                      </span>
+                      <span className={cn(
+                        "self-start inline-flex rounded-full border px-2 py-0.5 text-xs font-medium",
+                        statusMeta.color
+                      )}>
+                        {statusMeta.zh}
+                      </span>
+                      {isAdmin && lead.assignedTo && (
+                        <p className="text-xs text-muted-foreground truncate">
+                          {lead.assignedTo.name}
+                        </p>
                       )}
-                      aria-label={isSelected ? "取消選擇" : "選擇商戶"}
-                    >
-                      {isSelected
-                        ? <CheckSquare className="h-4 w-4" />
-                        : <Square className="h-4 w-4" />
-                      }
-                    </button>
+                    </Link>
+                  </div>
+                </div>
 
-                    {/* Delete */}
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setDeleteTarget(lead);
-                      }}
-                      className="absolute top-2.5 right-2.5 flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:bg-red-100 hover:text-red-600 transition-colors"
-                      aria-label="刪除商戶"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </>
+                {/* Delete button */}
+                {isAdmin && (
+                  <button
+                    onClick={e => { e.preventDefault(); setDeleteTarget(lead); }}
+                    className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:bg-red-100 hover:text-red-600 transition-colors"
+                    aria-label="刪除商戶"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
                 )}
               </li>
             );
@@ -350,28 +339,26 @@ export function LeadsClient({ leads, filterType, filterValue, isAdmin, salesUser
         </ul>
       )}
 
-      {/* ── Bulk assign action bar ──────────────────────────────────── */}
+      {/* ── Bulk assign bar ─────────────────────────────────────────── */}
       {isAdmin && hasSelection && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 border-t bg-card/95 backdrop-blur-sm shadow-lg px-4 py-3 safe-area-pb">
+        <div className="fixed bottom-0 left-0 right-0 z-40 border-t bg-card/95 backdrop-blur-sm shadow-lg px-4 py-3">
           <div className="mx-auto max-w-2xl flex items-center gap-3">
-            <UserCheck className="h-5 w-5 shrink-0 text-primary" />
+            <UserCheck className="h-5 w-5 shrink-0" style={{ color: "#fed7aa" }} />
             <span className="text-sm font-medium shrink-0">
-              已選 <span className="text-primary font-bold">{selectedIds.size}</span> 間
+              已選{" "}
+              <span className="font-bold" style={{ color: "#fed7aa" }}>{selectedIds.size}</span>{" "}
+              間
             </span>
-
             <select
               value={assignTargetId}
-              onChange={(e) => setAssignTargetId(e.target.value)}
+              onChange={e => setAssignTargetId(e.target.value)}
               className="flex-1 h-10 rounded-lg border border-border bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring min-w-0"
             >
               <option value="">選擇負責人…</option>
-              {salesUsers.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.name}
-                </option>
+              {salesUsers.map(u => (
+                <option key={u.id} value={u.id}>{u.name}</option>
               ))}
             </select>
-
             <button
               onClick={handleAssign}
               disabled={!assignTargetId || isAssigning}
@@ -379,7 +366,6 @@ export function LeadsClient({ leads, filterType, filterValue, isAdmin, salesUser
             >
               {isAssigning ? "指派中…" : "確認"}
             </button>
-
             <button
               onClick={clearSelection}
               disabled={isAssigning}
