@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import { authConfig } from "@/auth.config";
 
 // Instantiate a lightweight NextAuth with only the Edge-safe config.
-// This avoids importing Prisma / Node.js modules in Edge middleware.
+// This avoids importing Prisma / Node.js modules in Edge runtime.
 const { auth } = NextAuth(authConfig);
 
 export default auth;
