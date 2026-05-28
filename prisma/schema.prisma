@@ -45,10 +45,11 @@ enum TaskType {
 }
 
 model User {
-  id    String @id @default(cuid())
-  name  String
-  role  Role
-  leads Lead[]
+  id           String  @id @default(cuid())
+  name         String
+  role         Role
+  passwordHash String?
+  leads        Lead[]
 }
 
 model Lead {
