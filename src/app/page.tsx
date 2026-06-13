@@ -155,7 +155,7 @@ function ActivityComparison({
           );
         })}
       </div>
-      <p className="text-[10px] text-muted-foreground">過去 7 日 vs 前 7 日</p>
+      <p className="text-[10px] text-muted-foreground">數字 = 最近 7 日　▲▼ = 對比再前 7 日</p>
     </div>
   );
 }
