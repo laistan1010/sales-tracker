@@ -13,14 +13,14 @@ export function NavLinks({ variant = "light" }: { variant?: "light" | "dark" }) 
   const pathname = usePathname();
   const dark = variant === "dark";
   return (
-    <nav className="flex items-center gap-0.5">
+    <nav className="flex items-center shrink-0">
       {links.map(({ href, label }) => {
         const active = pathname.startsWith(href);
         return (
           <Link
             key={href}
             href={href}
-            className={`relative px-3 py-1.5 text-sm font-medium transition-colors rounded-md ${
+            className={`relative px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors rounded-md whitespace-nowrap ${
               active
                 ? dark ? "text-white" : "text-foreground"
                 : dark
@@ -30,7 +30,7 @@ export function NavLinks({ variant = "light" }: { variant?: "light" | "dark" }) 
           >
             {label}
             {active && (
-              <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-[var(--brand)]" />
+              <span className="absolute bottom-0 left-2 right-2 sm:left-3 sm:right-3 h-0.5 rounded-full bg-[var(--brand)]" />
             )}
           </Link>
         );

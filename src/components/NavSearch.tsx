@@ -28,7 +28,7 @@ export function NavSearch() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex-1 max-w-sm">
+    <form onSubmit={handleSubmit} className="flex-1 min-w-0">
       <div className="relative">
         <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/45" />
         <input
@@ -37,6 +37,7 @@ export function NavSearch() {
           onChange={e => setQuery(e.target.value)}
           placeholder="搜尋商戶…"
           className="h-8 w-full rounded-md border border-white/15 bg-white/10 pl-8 pr-7 text-sm text-white placeholder:text-white/40 transition-colors focus:border-white/30 focus:bg-white/15 focus:outline-none"
+          style={{ WebkitTextFillColor: "white", caretColor: "white" }}
         />
         {query && (
           <button

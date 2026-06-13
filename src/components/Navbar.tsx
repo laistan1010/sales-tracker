@@ -15,10 +15,10 @@ export async function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-[var(--navbar)] shadow-md">
-      <div className="mx-auto flex h-14 max-w-screen-xl items-center gap-4 px-4">
+      <div className="mx-auto flex h-14 max-w-screen-xl items-center gap-2 px-3 sm:gap-4 sm:px-4">
 
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 shrink-0">
+        <Link href="/" className="flex items-center gap-2 shrink-0">
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--brand)]">
             <BarChart3 className="h-3.5 w-3.5 text-white" />
           </div>
@@ -32,13 +32,13 @@ export async function Navbar() {
         {/* Nav links */}
         <NavLinks variant="dark" />
 
-        {/* Search */}
+        {/* Search — grows to fill remaining space */}
         <Suspense>
           <NavSearch />
         </Suspense>
 
         {/* Right side */}
-        <div className="ml-auto flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
 
           {/* User pill */}
           <div className="hidden sm:flex items-center gap-2 border border-white/20 rounded-full pl-1 pr-3 py-1">
