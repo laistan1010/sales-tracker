@@ -32,6 +32,17 @@ export const TASK_TYPE_META: Record<TaskType, { zh: string; icon: string; activi
   EMAIL:   { zh: "電郵",     icon: "", activityType: "EMAIL"   },
 };
 
+export const HK_DISTRICTS = [
+  // 九龍
+  "尖沙咀", "旺角", "油麻地", "佐敦", "深水埗",
+  "黃大仙", "九龍城", "土瓜灣", "紅磡", "觀塘", "藍田", "牛頭角", "秀茂坪",
+  // 港島
+  "銅鑼灣", "中環", "上環", "灣仔", "北角", "天后", "西環", "筲箕灣", "柴灣", "跑馬地",
+  // 新界
+  "荃灣", "元朗", "沙田", "屯門", "大埔", "粉嶺", "上水",
+  "將軍澳", "天水圍", "葵涌", "青衣", "馬鞍山",
+];
+
 export const ALL_INDUSTRIES = Object.keys(INDUSTRY_LABELS) as Industry[];
 export const ALL_STATUSES   = Object.keys(STATUS_LABELS)   as LeadStatus[];
 export const ALL_ACTIVITIES = Object.keys(ACTIVITY_LABELS) as ActivityType[];

@@ -21,17 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Zap } from "lucide-react";
 import { createLead, type ActionState } from "./actions";
-import { ALL_INDUSTRIES, INDUSTRY_LABELS } from "@/lib/constants";
-
-// 常用港鐵站 / 地區（Sales 可直接點選，亦可自由輸入）
-const HK_DISTRICTS = [
-  // 核心地鐵站
-  "尖沙咀", "旺角", "油麻地", "佐敦", "深水埗",
-  "銅鑼灣", "中環", "上環", "灣仔",
-  "觀塘", "荃灣", "元朗", "沙田",
-  // 大區分類
-  "港島區 (其他)", "九龍區 (其他)", "新界區 (其他)",
-];
+import { ALL_INDUSTRIES, INDUSTRY_LABELS, HK_DISTRICTS } from "@/lib/constants";
 
 const initial: ActionState = {};
 

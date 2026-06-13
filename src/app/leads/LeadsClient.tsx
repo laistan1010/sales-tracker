@@ -10,17 +10,11 @@ import {
   ALL_STATUSES,
   INDUSTRY_LABELS,
   STATUS_LABELS,
+  HK_DISTRICTS,
 } from "@/lib/constants";
 import { MapPin, Trash2, UserCheck, CheckSquare, Square } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { deleteLead, assignLeads } from "./actions";
-
-const HK_DISTRICTS = [
-  "尖沙咀", "旺角", "油麻地", "佐敦", "深水埗",
-  "銅鑼灣", "中環", "上環", "灣仔",
-  "觀塘", "荃灣", "元朗", "沙田",
-  "港島區 (其他)", "九龍區 (其他)", "新界區 (其他)",
-];
 
 type LeadWithUser = Lead & { assignedTo: User | null };
 
