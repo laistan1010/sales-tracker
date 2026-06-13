@@ -6,7 +6,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -112,7 +111,7 @@ export function QuickLog({ leadId }: { leadId: string }) {
           />
           {error && <p className="text-sm text-destructive">{error}</p>}
 
-          <DialogFooter className="flex flex-col gap-2 pt-2">
+          <div className="flex flex-col gap-2 pt-2">
             <Button
               onClick={handleSave}
               disabled={isPending}
@@ -125,7 +124,7 @@ export function QuickLog({ leadId }: { leadId: string }) {
                 取消
               </Button>
             </DialogClose>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </>
