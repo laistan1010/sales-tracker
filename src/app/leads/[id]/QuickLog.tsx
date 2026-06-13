@@ -11,38 +11,44 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { MapPin, Phone, MessageSquare } from "lucide-react";
 import type { ActivityType } from "@/generated/prisma/enums";
 import { ACTIVITY_LABELS } from "@/lib/constants";
 import { createActivity } from "./actions";
 import { cn } from "@/lib/utils";
 
-const QUICK_LOG_BUTTONS: { type: ActivityType; bgClass: string; label: string; icon: string }[] = [
+const QUICK_LOG_BUTTONS: {
+  type:     ActivityType;
+  icon:     React.ElementType;
+  label:    string;
+  bgClass:  string;
+}[] = [
   {
-    type: "WALK_IN",
-    icon: "🚶",
-    label: "Walk-in 拜訪",
-    bgClass: "border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 active:bg-emerald-200",
+    type:    "WALK_IN",
+    icon:    MapPin,
+    label:   "Walk-in 拜訪",
+    bgClass: "border-orange-200 bg-orange-50  text-orange-700 hover:bg-orange-100  active:bg-orange-200  dark:bg-orange-900/20 dark:border-orange-800 dark:text-orange-300",
   },
   {
-    type: "PHONE",
-    icon: "📞",
-    label: "打電話",
-    bgClass: "border-blue-300 bg-blue-50 text-blue-800 hover:bg-blue-100 active:bg-blue-200",
+    type:    "PHONE",
+    icon:    Phone,
+    label:   "打電話",
+    bgClass: "border-orange-300 bg-orange-100 text-orange-800 hover:bg-orange-200  active:bg-orange-300  dark:bg-orange-900/30 dark:border-orange-700 dark:text-orange-200",
   },
   {
-    type: "WHATSAPP",
-    icon: "💬",
-    label: "WhatsApp",
-    bgClass: "border-green-300 bg-green-50 text-green-800 hover:bg-green-100 active:bg-green-200",
+    type:    "WHATSAPP",
+    icon:    MessageSquare,
+    label:   "WhatsApp",
+    bgClass: "border-orange-400 bg-orange-200 text-orange-900 hover:bg-orange-300  active:bg-orange-400  dark:bg-orange-900/40 dark:border-orange-600 dark:text-orange-100",
   },
 ];
 
 export function QuickLog({ leadId }: { leadId: string }) {
-  const [open, setOpen] = useState(false);
+  const [open,         setOpen]        = useState(false);
   const [selectedType, setSelectedType] = useState<ActivityType | null>(null);
-  const [notes, setNotes] = useState("");
-  const [error, setError] = useState("");
-  const [isPending, startTransition] = useTransition();
+  const [notes,        setNotes]        = useState("");
+  const [error,        setError]        = useState("");
+  const [isPending,    startTransition] = useTransition();
 
   function handleOpen(type: ActivityType) {
     setSelectedType(type);
@@ -56,22 +62,22 @@ export function QuickLog({ leadId }: { leadId: string }) {
     setError("");
     startTransition(async () => {
       const result = await createActivity(leadId, selectedType, notes);
-      if (result?.error) {
-        setError(result.error);
-        return;
-      }
+      if (result?.error) { setError(result.error); return; }
       setOpen(false);
     });
   }
 
-  const meta = selectedType ? ACTIVITY_LABELS[selectedType] : null;
+  const meta      = selectedType ? ACTIVITY_LABELS[selectedType] : null;
+  const ModalIcon = selectedType
+    ? QUICK_LOG_BUTTONS.find(b => b.type === selectedType)?.icon
+    : null;
 
   return (
     <>
       <section className="space-y-3">
         <h2 className="text-base font-semibold">3 秒快速記錄</h2>
         <div className="grid grid-cols-3 gap-3">
-          {QUICK_LOG_BUTTONS.map(({ type, icon, label, bgClass }) => (
+          {QUICK_LOG_BUTTONS.map(({ type, icon: Icon, label, bgClass }) => (
             <button
               key={type}
               onClick={() => handleOpen(type)}
@@ -80,7 +86,7 @@ export function QuickLog({ leadId }: { leadId: string }) {
                 bgClass
               )}
             >
-              <span className="text-3xl leading-none">{icon}</span>
+              <Icon className="h-7 w-7" />
               <span className="text-xs leading-tight text-center">{label}</span>
             </button>
           ))}
@@ -90,8 +96,9 @@ export function QuickLog({ leadId }: { leadId: string }) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>
-              {meta?.icon} {meta?.zh} — 備忘錄
+            <DialogTitle className="flex items-center gap-2">
+              {ModalIcon && <ModalIcon className="h-4 w-4 text-[var(--brand)]" />}
+              {meta?.zh} — 備忘錄
             </DialogTitle>
           </DialogHeader>
 
@@ -105,20 +112,20 @@ export function QuickLog({ leadId }: { leadId: string }) {
           />
           {error && <p className="text-sm text-destructive">{error}</p>}
 
-          <div className="flex flex-col gap-2 pt-2">
+          <DialogFooter className="flex flex-col gap-2 pt-2">
             <Button
               onClick={handleSave}
               disabled={isPending}
-              className="w-full h-14 text-base font-bold bg-green-600 hover:bg-green-500 active:bg-green-700 text-white"
+              className="w-full h-14 text-base font-bold bg-[var(--brand)] hover:bg-[var(--brand)]/90 text-white"
             >
               {isPending ? "儲存中…" : "儲存記錄"}
             </Button>
             <DialogClose asChild>
-              <Button className="w-full h-14 text-base font-bold bg-red-600 hover:bg-red-500 active:bg-red-700 text-white">
+              <Button variant="outline" className="w-full h-14 text-base font-bold">
                 取消
               </Button>
             </DialogClose>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

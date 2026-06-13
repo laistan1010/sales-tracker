@@ -9,7 +9,17 @@ import { ReviewSection } from "./ReviewSection";
 import { PipelineTracker } from "./PipelineTracker";
 import { TaskSection } from "./TaskSection";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, MapPin, ExternalLink } from "lucide-react";
+import { ArrowLeft, MapPin, ExternalLink, Map, UtensilsCrossed, Phone, MessageSquare, RefreshCw, Users, Mail } from "lucide-react";
+import type { ActivityType } from "@/generated/prisma/enums";
+
+const ACTIVITY_ICONS: Record<ActivityType, React.ElementType> = {
+  PHONE:    Phone,
+  WHATSAPP: MessageSquare,
+  WALK_IN:  MapPin,
+  PIPELINE: RefreshCw,
+  MEETING:  Users,
+  EMAIL:    Mail,
+};
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -79,8 +89,9 @@ export default async function LeadDetailPage({ params }: PageProps) {
 
         {/* District pill — always visible, key spatial info */}
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1 rounded-lg bg-foreground px-3 py-1 text-sm font-semibold text-background">
-            📍 {lead.district}
+          <span className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-1 text-sm font-semibold text-background">
+            <MapPin className="h-3.5 w-3.5 shrink-0" />
+            {lead.district}
           </span>
           <span
             className={cn(
@@ -114,7 +125,7 @@ export default async function LeadDetailPage({ params }: PageProps) {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 rounded-lg border bg-background px-3 py-2 text-sm font-medium hover:bg-accent transition-colors"
               >
-                <span>🗺️</span> Google Maps
+                <Map className="h-3.5 w-3.5 text-muted-foreground" /> Google Maps
                 <ExternalLink className="h-3 w-3 text-muted-foreground" />
               </a>
             )}
@@ -125,7 +136,7 @@ export default async function LeadDetailPage({ params }: PageProps) {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 rounded-lg border bg-background px-3 py-2 text-sm font-medium hover:bg-accent transition-colors"
               >
-                <span>🍽️</span> OpenRice
+                <UtensilsCrossed className="h-3.5 w-3.5 text-muted-foreground" /> OpenRice
                 <ExternalLink className="h-3 w-3 text-muted-foreground" />
               </a>
             )}
@@ -136,7 +147,7 @@ export default async function LeadDetailPage({ params }: PageProps) {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 rounded-lg border bg-background px-3 py-2 text-sm font-medium hover:bg-accent transition-colors"
               >
-                <span>📍</span> Amap 高德
+                <MapPin className="h-3.5 w-3.5 text-muted-foreground" /> Amap 高德
                 <ExternalLink className="h-3 w-3 text-muted-foreground" />
               </a>
             )}
@@ -176,10 +187,11 @@ export default async function LeadDetailPage({ params }: PageProps) {
           <ol className="relative space-y-4 border-l-2 border-border pl-5">
             {lead.activities.map((act) => {
               const meta = ACTIVITY_LABELS[act.type];
+              const Icon = ACTIVITY_ICONS[act.type];
               return (
                 <li key={act.id} className="relative">
-                  <span className="absolute -left-[1.625rem] flex h-6 w-6 items-center justify-center rounded-full border bg-background text-sm">
-                    {meta.icon}
+                  <span className="absolute -left-[1.625rem] flex h-6 w-6 items-center justify-center rounded-full border bg-background text-[var(--brand)]">
+                    <Icon className="h-3.5 w-3.5" />
                   </span>
                   <div className="rounded-xl border bg-card p-3 space-y-1">
                     <div className="flex items-center justify-between gap-2">

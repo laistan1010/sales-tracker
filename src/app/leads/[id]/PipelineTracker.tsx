@@ -11,18 +11,13 @@ interface Props {
   objectionNotes: string | null;
 }
 
-const STAGES: {
-  id:          LeadStatus;
-  label:       string;
-  activeColor: string;
-  dotColor:    string;
-}[] = [
-  { id: "LEAD",        label: "潛在客戶",  activeColor: "bg-gray-700   text-white border-gray-700",   dotColor: "bg-gray-400"    },
-  { id: "CONTACTED",   label: "已接觸",    activeColor: "bg-blue-600   text-white border-blue-600",   dotColor: "bg-blue-400"    },
-  { id: "DEMO",        label: "提案中",    activeColor: "bg-purple-600 text-white border-purple-600", dotColor: "bg-purple-400"  },
-  { id: "OBJECTION",   label: "處理反對",  activeColor: "bg-amber-500  text-white border-amber-500",  dotColor: "bg-amber-400"   },
-  { id: "CLOSED_WON",  label: "成交 🎉",   activeColor: "bg-emerald-600 text-white border-emerald-600", dotColor: "bg-emerald-400" },
-  { id: "CLOSED_LOST", label: "失敗 ❌",   activeColor: "bg-rose-600   text-white border-rose-600",   dotColor: "bg-rose-400"    },
+const STAGES: { id: LeadStatus; label: string; activeColor: string }[] = [
+  { id: "LEAD",        label: "潛在客戶", activeColor: "bg-zinc-600    text-white border-zinc-600"    },
+  { id: "CONTACTED",   label: "已接觸",   activeColor: "bg-orange-300  text-orange-900 border-orange-300" },
+  { id: "DEMO",        label: "提案中",   activeColor: "bg-orange-500  text-white border-orange-500"  },
+  { id: "OBJECTION",   label: "處理反對", activeColor: "bg-orange-600  text-white border-orange-600"  },
+  { id: "CLOSED_WON",  label: "成交",     activeColor: "bg-orange-700  text-white border-orange-700"  },
+  { id: "CLOSED_LOST", label: "失敗",     activeColor: "bg-zinc-600    text-white border-zinc-600"    },
 ];
 
 const STAGE_INDEX: Record<LeadStatus, number> = {
@@ -31,12 +26,12 @@ const STAGE_INDEX: Record<LeadStatus, number> = {
 
 function getProgressBar(status: LeadStatus): { pct: number; color: string } {
   switch (status) {
-    case "LEAD":        return { pct: 16,  color: "bg-emerald-500" };
-    case "CONTACTED":   return { pct: 33,  color: "bg-emerald-500" };
-    case "DEMO":        return { pct: 50,  color: "bg-emerald-500" };
-    case "OBJECTION":   return { pct: 66,  color: "bg-emerald-500" };
-    case "CLOSED_WON":  return { pct: 100, color: "bg-emerald-500" };
-    case "CLOSED_LOST": return { pct: 100, color: "bg-rose-500"    };
+    case "LEAD":        return { pct: 16,  color: "bg-orange-300" };
+    case "CONTACTED":   return { pct: 33,  color: "bg-orange-400" };
+    case "DEMO":        return { pct: 50,  color: "bg-orange-500" };
+    case "OBJECTION":   return { pct: 66,  color: "bg-orange-600" };
+    case "CLOSED_WON":  return { pct: 100, color: "bg-orange-700" };
+    case "CLOSED_LOST": return { pct: 100, color: "bg-zinc-500"   };
   }
 }
 
@@ -68,11 +63,8 @@ export function PipelineTracker({ leadId, currentStatus, objectionNotes }: Props
     setIsSavingNotes(true);
     const result = await updateLeadStatus(leadId, optimisticStatus, optimisticStatus, notes);
     setIsSavingNotes(false);
-    if (result.success) {
-      toast.success("原因已儲存");
-    } else {
-      toast.error("儲存失敗，請重試");
-    }
+    if (result.success) toast.success("原因已儲存");
+    else toast.error("儲存失敗，請重試");
   }
 
   return (
@@ -82,7 +74,7 @@ export function PipelineTracker({ leadId, currentStatus, objectionNotes }: Props
           Sales Pipeline
         </h3>
         {isPending && (
-          <div className="animate-spin h-4 w-4 border-2 border-emerald-500 border-t-transparent rounded-full" />
+          <div className="animate-spin h-4 w-4 border-2 border-[var(--brand)] border-t-transparent rounded-full" />
         )}
       </div>
 
@@ -124,7 +116,9 @@ export function PipelineTracker({ leadId, currentStatus, objectionNotes }: Props
       {showNotes && (
         <div className="pt-4 border-t border-dashed border-border space-y-2">
           <label className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
-            <span className={`h-2 w-2 rounded-full shrink-0 ${optimisticStatus === "CLOSED_LOST" ? "bg-rose-500" : "bg-amber-500"}`} />
+            <span className={`h-2 w-2 rounded-full shrink-0 ${
+              optimisticStatus === "CLOSED_LOST" ? "bg-zinc-500" : "bg-orange-500"
+            }`} />
             {optimisticStatus === "CLOSED_LOST" ? "失敗原因" : "客戶反對意見 / 痛點"}
           </label>
           <div className="flex gap-2">
