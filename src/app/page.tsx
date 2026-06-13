@@ -82,10 +82,10 @@ function computeDashStats(leads: LeadSlice[]) {
 // ── Pipeline Funnel ────────────────────────────────────────────────────────
 
 const FUNNEL_STAGES: { status: LeadStatus; bar: string; dot: string }[] = [
-  { status: "LEAD",      bar: "bg-zinc-400",   dot: "bg-zinc-400"   },
-  { status: "CONTACTED", bar: "bg-blue-400",   dot: "bg-blue-400"   },
-  { status: "DEMO",      bar: "bg-violet-400", dot: "bg-violet-400" },
-  { status: "OBJECTION", bar: "bg-amber-400",  dot: "bg-amber-400"  },
+  { status: "LEAD",      bar: "bg-orange-200", dot: "bg-orange-200" },
+  { status: "CONTACTED", bar: "bg-orange-400", dot: "bg-orange-400" },
+  { status: "DEMO",      bar: "bg-orange-500", dot: "bg-orange-500" },
+  { status: "OBJECTION", bar: "bg-orange-600", dot: "bg-orange-600" },
 ];
 
 function PipelineFunnel({ byStatus, total }: {
@@ -128,17 +128,17 @@ function PipelineFunnel({ byStatus, total }: {
       </div>
 
       <div className="flex gap-2 pt-2 border-t">
-        <div className="flex-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 p-3 flex items-center gap-2">
-          <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+        <div className="flex-1 rounded-md bg-orange-600/10 border border-orange-600/20 p-3 flex items-center gap-2">
+          <CheckCircle2 className="h-4 w-4 text-orange-600 shrink-0" />
           <div>
-            <p className="text-lg font-black font-mono text-emerald-500 leading-none">{won}</p>
+            <p className="text-lg font-black font-mono text-orange-600 leading-none">{won}</p>
             <p className="text-[10px] text-muted-foreground mt-0.5">成交</p>
           </div>
         </div>
-        <div className="flex-1 rounded-md bg-red-500/10 border border-red-500/20 p-3 flex items-center gap-2">
-          <XCircle className="h-4 w-4 text-red-500 shrink-0" />
+        <div className="flex-1 rounded-md bg-zinc-500/10 border border-zinc-500/20 p-3 flex items-center gap-2">
+          <XCircle className="h-4 w-4 text-zinc-500 shrink-0" />
           <div>
-            <p className="text-lg font-black font-mono text-red-500 leading-none">{lost}</p>
+            <p className="text-lg font-black font-mono text-zinc-500 leading-none">{lost}</p>
             <p className="text-[10px] text-muted-foreground mt-0.5">失敗</p>
           </div>
         </div>
@@ -176,7 +176,7 @@ function ActivityComparison({ thisWeek, lastWeek }: {
           活動追蹤
         </h2>
         <span className={`text-xs font-mono font-semibold ${
-          totalDiff > 0 ? "text-emerald-500" : totalDiff < 0 ? "text-red-500" : "text-muted-foreground"
+          totalDiff > 0 ? "text-orange-600" : totalDiff < 0 ? "text-zinc-500" : "text-muted-foreground"
         }`}>
           {thisTotal} 次
           {totalDiff !== 0 && (
@@ -198,7 +198,7 @@ function ActivityComparison({ thisWeek, lastWeek }: {
               <span className="flex-1 text-xs text-muted-foreground">{zh}</span>
               <span className="text-sm font-bold font-mono tabular-nums w-5 text-right">{curr}</span>
               <span className={`text-[10px] font-mono font-medium w-12 text-right tabular-nums ${
-                diff > 0 ? "text-emerald-500" : diff < 0 ? "text-red-500" : "text-muted-foreground"
+                diff > 0 ? "text-orange-600" : diff < 0 ? "text-zinc-500" : "text-muted-foreground"
               }`}>
                 {diff > 0 ? `+${diff}` : diff < 0 ? `${diff}` : "—"}
               </span>
@@ -264,7 +264,7 @@ function DistrictBreakdown({ data, total }: { data: [string, number][]; total: n
                 </span>
               </div>
               <div className="h-1 rounded-full bg-muted overflow-hidden">
-                <div className="h-full rounded-full bg-indigo-400" style={{ width: `${pct}%` }} />
+                <div className="h-full rounded-full bg-orange-400" style={{ width: `${pct}%` }} />
               </div>
             </div>
           );
@@ -308,10 +308,10 @@ function Leaderboard({ entries, selectedRepId }: {
         <span className="flex-1" />
         <div className="flex items-center gap-4 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
           <span className="w-10 text-center">商戶</span>
-          <span className="w-10 text-center text-violet-500">進行中</span>
-          <span className="w-10 text-center text-emerald-500">成交</span>
-          <span className="w-10 text-center hidden sm:block text-amber-500">今日</span>
-          <span className="w-10 text-center hidden sm:block text-blue-500">活動</span>
+          <span className="w-10 text-center text-orange-400">進行中</span>
+          <span className="w-10 text-center text-orange-700">成交</span>
+          <span className="w-10 text-center hidden sm:block text-orange-500">今日</span>
+          <span className="w-10 text-center hidden sm:block text-orange-300">活動</span>
         </div>
       </div>
 
@@ -350,12 +350,12 @@ function Leaderboard({ entries, selectedRepId }: {
               {/* Stats */}
               <div className="flex items-center gap-4 text-sm font-mono font-bold tabular-nums">
                 <span className="w-10 text-center">{total}</span>
-                <span className="w-10 text-center text-violet-500">{active}</span>
-                <span className="w-10 text-center text-emerald-500">{won}</span>
-                <span className={`w-10 text-center hidden sm:block ${todayCount > 0 ? "text-amber-500" : ""}`}>
+                <span className="w-10 text-center text-orange-400">{active}</span>
+                <span className="w-10 text-center text-orange-700">{won}</span>
+                <span className={`w-10 text-center hidden sm:block ${todayCount > 0 ? "text-orange-500" : ""}`}>
                   {todayCount}
                 </span>
-                <span className="w-10 text-center hidden sm:block text-blue-500">{activitiesThisWeek}</span>
+                <span className="w-10 text-center hidden sm:block text-orange-300">{activitiesThisWeek}</span>
               </div>
             </Link>
           );
