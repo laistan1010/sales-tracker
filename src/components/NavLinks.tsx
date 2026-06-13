@@ -9,8 +9,9 @@ const links = [
   { href: "/users",      label: "團隊" },
 ];
 
-export function NavLinks() {
+export function NavLinks({ variant = "light" }: { variant?: "light" | "dark" }) {
   const pathname = usePathname();
+  const dark = variant === "dark";
   return (
     <nav className="flex items-center gap-0.5">
       {links.map(({ href, label }) => {
@@ -21,8 +22,10 @@ export function NavLinks() {
             href={href}
             className={`relative px-3 py-1.5 text-sm font-medium transition-colors rounded-md ${
               active
-                ? "text-foreground"
-                : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                ? dark ? "text-white" : "text-foreground"
+                : dark
+                  ? "text-white/55 hover:text-white hover:bg-white/10"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
             }`}
           >
             {label}
