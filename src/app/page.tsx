@@ -4,18 +4,18 @@ import { Badge } from "@/components/ui/badge";
 import { STATUS_LABELS, TASK_TYPE_META, INDUSTRY_LABELS, ACTIVITY_LABELS } from "@/lib/constants";
 import type { LeadStatus, ActivityType, Industry } from "@/generated/prisma/enums";
 import Link from "next/link";
-import { CalendarDays, Clock, TrendingUp, BarChart2, Trophy, Users } from "lucide-react";
+import { CalendarDays, Clock, TrendingUp, BarChart2, Trophy, X } from "lucide-react";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function getHKTimes() {
-  const nowHK        = new Date(Date.now() + 8 * 60 * 60 * 1000);
-  const todayStr     = nowHK.toISOString().slice(0, 10);
-  const in7Days      = new Date(nowHK.getTime() + 7  * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const nowHK         = new Date(Date.now() + 8 * 60 * 60 * 1000);
+  const todayStr      = nowHK.toISOString().slice(0, 10);
+  const in7Days       = new Date(nowHK.getTime() + 7  * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const thisWeekStart = new Date(nowHK.getTime() - 7  * 24 * 60 * 60 * 1000);
   const lastWeekStart = new Date(nowHK.getTime() - 14 * 24 * 60 * 60 * 1000);
-  const hour         = nowHK.getUTCHours();
-  const greeting     = hour < 12 ? "早晨" : hour < 18 ? "午安" : "晚上好";
+  const hour          = nowHK.getUTCHours();
+  const greeting      = hour < 12 ? "早晨" : hour < 18 ? "午安" : "晚上好";
   return { todayStr, in7Days, greeting, thisWeekStart, lastWeekStart };
 }
 
@@ -34,6 +34,30 @@ function countByType<T extends string>(items: { type: T }[]): Partial<Record<T, 
   }, {});
 }
 
+// ── Shared display helpers ─────────────────────────────────────────────────
+
+type LeadSlice = { status: LeadStatus; industry: Industry; district: string; assignedToId: string | null };
+
+function computeDashStats(leads: LeadSlice[]) {
+  const total    = leads.length;
+  const byStatus = leads.reduce<Partial<Record<LeadStatus, number>>>((acc, l) => {
+    acc[l.status] = (acc[l.status] ?? 0) + 1;
+    return acc;
+  }, {});
+  const industryMap  = leads.reduce<Partial<Record<Industry, number>>>((acc, l) => {
+    acc[l.industry] = (acc[l.industry] ?? 0) + 1;
+    return acc;
+  }, {});
+  const districtMap  = leads.reduce<Record<string, number>>((acc, l) => {
+    if (l.district && l.district !== "待補填") acc[l.district] = (acc[l.district] ?? 0) + 1;
+    return acc;
+  }, {});
+  const industryData = (Object.entries(industryMap) as [Industry, number][])
+    .sort((a, b) => b[1] - a[1]).map(([industry, count]) => ({ industry, count }));
+  const districtData = Object.entries(districtMap).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  return { total, byStatus, industryData, districtData };
+}
+
 // ── Pipeline Funnel ────────────────────────────────────────────────────────
 
 const FUNNEL_STAGES: { status: LeadStatus; bar: string }[] = [
@@ -43,15 +67,12 @@ const FUNNEL_STAGES: { status: LeadStatus; bar: string }[] = [
   { status: "OBJECTION", bar: "bg-yellow-400" },
 ];
 
-function PipelineFunnel({
-  byStatus,
-  total,
-}: {
+function PipelineFunnel({ byStatus, total }: {
   byStatus: Partial<Record<LeadStatus, number>>;
   total:    number;
 }) {
-  const won  = byStatus.CLOSED_WON  ?? 0;
-  const lost = byStatus.CLOSED_LOST ?? 0;
+  const won     = byStatus.CLOSED_WON  ?? 0;
+  const lost    = byStatus.CLOSED_LOST ?? 0;
   const winRate = (won + lost) > 0 ? Math.round(won / (won + lost) * 100) : null;
 
   return (
@@ -60,7 +81,6 @@ function PipelineFunnel({
         <TrendingUp className="h-4 w-4 text-muted-foreground" />
         銷售漏斗
       </h2>
-
       <div className="space-y-2.5">
         {FUNNEL_STAGES.map(({ status, bar }) => {
           const count = byStatus[status] ?? 0;
@@ -82,7 +102,6 @@ function PipelineFunnel({
           );
         })}
       </div>
-
       <div className="flex gap-2 pt-1 border-t">
         <div className="flex-1 rounded-lg bg-green-50 dark:bg-green-950/30 p-3 text-center">
           <p className="text-xl font-black text-green-600">{won}</p>
@@ -107,10 +126,7 @@ function PipelineFunnel({
 
 const TRACKED_ACTIVITY_TYPES: ActivityType[] = ["PHONE", "WHATSAPP", "WALK_IN", "MEETING", "EMAIL"];
 
-function ActivityComparison({
-  thisWeek,
-  lastWeek,
-}: {
+function ActivityComparison({ thisWeek, lastWeek }: {
   thisWeek: Partial<Record<ActivityType, number>>;
   lastWeek: Partial<Record<ActivityType, number>>;
 }) {
@@ -134,7 +150,6 @@ function ActivityComparison({
           )}
         </span>
       </div>
-
       <div className="space-y-3">
         {TRACKED_ACTIVITY_TYPES.map(type => {
           const curr = thisWeek[type] ?? 0;
@@ -160,7 +175,7 @@ function ActivityComparison({
   );
 }
 
-// ── Industry & District Breakdown ──────────────────────────────────────────
+// ── Distribution Charts ────────────────────────────────────────────────────
 
 function IndustryBreakdown({ data }: { data: { industry: Industry; count: number }[] }) {
   const max = Math.max(...data.map(d => d.count), 1);
@@ -173,7 +188,6 @@ function IndustryBreakdown({ data }: { data: { industry: Industry; count: number
       <div className="space-y-2.5">
         {data.map(({ industry, count }) => {
           const { zh, bar } = INDUSTRY_LABELS[industry];
-          const pct = Math.round(count / max * 100);
           return (
             <div key={industry} className="space-y-1">
               <div className="flex items-center justify-between text-xs">
@@ -181,7 +195,8 @@ function IndustryBreakdown({ data }: { data: { industry: Industry; count: number
                 <span className="font-semibold">{count}</span>
               </div>
               <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                <div className={`h-full rounded-full ${bar}`} style={{ width: `${pct}%` }} />
+                <div className={`h-full rounded-full ${bar}`}
+                  style={{ width: `${Math.round(count / max * 100)}%` }} />
               </div>
             </div>
           );
@@ -221,64 +236,82 @@ function DistrictBreakdown({ data, total }: { data: [string, number][]; total: n
   );
 }
 
-// ── Leaderboard (Admin only) ───────────────────────────────────────────────
+// ── Leaderboard ────────────────────────────────────────────────────────────
 
 type LeaderboardEntry = {
-  user:                { id: string; name: string };
-  total:               number;
-  active:              number;
-  won:                 number;
-  activitiesThisWeek:  number;
-  todayCount:          number;
-  upcomingCount:       number;
+  user:               { id: string; name: string };
+  total:              number;
+  active:             number;
+  won:                number;
+  activitiesThisWeek: number;
+  todayCount:         number;
 };
 
-function Leaderboard({ entries }: { entries: LeaderboardEntry[] }) {
-  const sorted = [...entries].sort((a, b) => b.won - a.won || b.active - a.active);
-  const medals = ["🥇", "🥈", "🥉"];
+function Leaderboard({ entries, selectedRepId }: {
+  entries:       LeaderboardEntry[];
+  selectedRepId: string | null;
+}) {
+  const sorted  = [...entries].sort((a, b) => b.won - a.won || b.active - a.active);
+  const medals  = ["🥇", "🥈", "🥉"];
 
   return (
     <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
       <div className="px-5 py-4 border-b flex items-center gap-2">
         <Trophy className="h-4 w-4 text-muted-foreground" />
         <h2 className="text-sm font-semibold">銷售員表現</h2>
+        {selectedRepId && (
+          <span className="text-xs text-muted-foreground ml-1">— 撳任意一行切換查看</span>
+        )}
       </div>
       <div className="divide-y">
-        {sorted.map(({ user, total, active, won, activitiesThisWeek, todayCount }, i) => (
-          <div key={user.id} className="flex items-center gap-3 px-4 py-3">
-            <span className="text-sm font-black text-muted-foreground w-5 text-center">
-              {medals[i] ?? i + 1}
-            </span>
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-foreground text-background font-bold text-sm">
-              {user.name.charAt(0)}
-            </div>
-            <p className="flex-1 font-semibold text-sm">{user.name}</p>
-            <div className="flex items-center gap-4 text-xs">
-              <div className="text-center">
-                <p className="text-base font-black">{total}</p>
-                <p className="text-muted-foreground">商戶</p>
+        {sorted.map(({ user, total, active, won, activitiesThisWeek, todayCount }, i) => {
+          const isSelected = user.id === selectedRepId;
+          return (
+            <Link
+              key={user.id}
+              href={isSelected ? "/" : `/?rep=${user.id}`}
+              className={`flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent ${
+                isSelected ? "bg-accent ring-1 ring-inset ring-foreground/10" : ""
+              }`}
+            >
+              <span className="text-sm w-5 text-center shrink-0">
+                {medals[i] ?? i + 1}
+              </span>
+              <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-bold text-sm ${
+                isSelected
+                  ? "bg-foreground text-background ring-2 ring-foreground ring-offset-2 ring-offset-background"
+                  : "bg-foreground text-background"
+              }`}>
+                {user.name.charAt(0)}
               </div>
-              <div className="text-center">
-                <p className="text-base font-black text-purple-600">{active}</p>
-                <p className="text-muted-foreground">進行中</p>
+              <p className="flex-1 font-semibold text-sm">{user.name}</p>
+              <div className="flex items-center gap-4 text-xs">
+                <div className="text-center">
+                  <p className="text-base font-black">{total}</p>
+                  <p className="text-muted-foreground">商戶</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-base font-black text-purple-600">{active}</p>
+                  <p className="text-muted-foreground">進行中</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-base font-black text-green-600">{won}</p>
+                  <p className="text-muted-foreground">成交</p>
+                </div>
+                <div className="text-center hidden sm:block">
+                  <p className={`text-base font-black ${todayCount > 0 ? "text-amber-500" : ""}`}>
+                    {todayCount}
+                  </p>
+                  <p className="text-muted-foreground">今日</p>
+                </div>
+                <div className="text-center hidden sm:block">
+                  <p className="text-base font-black text-blue-600">{activitiesThisWeek}</p>
+                  <p className="text-muted-foreground">7日活動</p>
+                </div>
               </div>
-              <div className="text-center">
-                <p className="text-base font-black text-green-600">{won}</p>
-                <p className="text-muted-foreground">成交</p>
-              </div>
-              <div className="text-center hidden sm:block">
-                <p className={`text-base font-black ${todayCount > 0 ? "text-amber-500" : ""}`}>
-                  {todayCount}
-                </p>
-                <p className="text-muted-foreground">今日</p>
-              </div>
-              <div className="text-center hidden sm:block">
-                <p className="text-base font-black text-blue-600">{activitiesThisWeek}</p>
-                <p className="text-muted-foreground">7日活動</p>
-              </div>
-            </div>
-          </div>
-        ))}
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
@@ -286,71 +319,31 @@ function Leaderboard({ entries }: { entries: LeaderboardEntry[] }) {
 
 // ── Page ───────────────────────────────────────────────────────────────────
 
-export default async function HomePage() {
+type Props = { searchParams: Promise<{ rep?: string }> };
+
+export default async function HomePage({ searchParams }: Props) {
   const session = await auth();
+  const params  = await searchParams;
+
   const userId  = session!.user.id;
   const isAdmin = session!.user.role === "ADMIN";
   const name    = session!.user.name ?? "Sales";
+  const repId   = isAdmin ? (params.rep ?? null) : null;
 
   const { todayStr, in7Days, greeting, thisWeekStart, lastWeekStart } = getHKTimes();
-
-  const statsWhere = isAdmin ? {} : { assignedToId: userId };
-
-  // Parallel fetch: leads + recent activities (last 14 days for comparison)
-  const [leads, recentActivities] = await Promise.all([
-    prisma.lead.findMany({
-      where: statsWhere,
-      select: { status: true, industry: true, district: true, assignedToId: true },
-    }),
-    prisma.activity.findMany({
-      where: isAdmin
-        ? { createdAt: { gte: lastWeekStart } }
-        : { lead: { assignedToId: userId }, createdAt: { gte: lastWeekStart } },
-      select: { type: true, createdAt: true, lead: { select: { assignedToId: true } } },
-    }),
-  ]);
-
-  // Pipeline stats
-  const total    = leads.length;
-  const byStatus = leads.reduce<Partial<Record<LeadStatus, number>>>((acc, l) => {
-    acc[l.status] = (acc[l.status] ?? 0) + 1;
-    return acc;
-  }, {});
-
-  // Stat cards
-  const statCards = [
-    { label: "全部商戶",    value: total,                                                   status: null,                       href: "/leads" },
-    { label: "成交",        value: byStatus.CLOSED_WON ?? 0,                               status: "CLOSED_WON"  as LeadStatus, href: "/leads?by=status&filter=CLOSED_WON" },
-    { label: "提案 / 處理", value: (byStatus.DEMO ?? 0) + (byStatus.OBJECTION ?? 0),       status: "DEMO"        as LeadStatus, href: "/leads?by=status&filter=DEMO,OBJECTION" },
-    { label: "潛在客戶",    value: (byStatus.LEAD ?? 0) + (byStatus.CONTACTED ?? 0),       status: "LEAD"        as LeadStatus, href: "/leads?by=status&filter=LEAD,CONTACTED" },
-  ];
-
-  // Activity comparison (split by week boundary)
-  const thisWeekActs = recentActivities.filter(a => new Date(a.createdAt) >= thisWeekStart);
-  const lastWeekActs = recentActivities.filter(a => new Date(a.createdAt) <  thisWeekStart);
-  const thisWeekByType = countByType<ActivityType>(thisWeekActs);
-  const lastWeekByType = countByType<ActivityType>(lastWeekActs);
-
-  // Industry breakdown (sorted by count desc)
-  const industryMap  = leads.reduce<Partial<Record<Industry, number>>>((acc, l) => {
-    acc[l.industry] = (acc[l.industry] ?? 0) + 1;
-    return acc;
-  }, {});
-  const industryData = (Object.entries(industryMap) as [Industry, number][])
-    .sort((a, b) => b[1] - a[1])
-    .map(([industry, count]) => ({ industry, count }));
-
-  // District breakdown (top 6, skip placeholder)
-  const districtMap  = leads.reduce<Record<string, number>>((acc, l) => {
-    if (l.district && l.district !== "待補填") acc[l.district] = (acc[l.district] ?? 0) + 1;
-    return acc;
-  }, {});
-  const districtData = Object.entries(districtMap).sort((a, b) => b[1] - a[1]).slice(0, 6);
 
   // ── Admin view ─────────────────────────────────────────────────────────
 
   if (isAdmin) {
-    const [salesUsers, teamTasks] = await Promise.all([
+    // Fetch all data up-front; filter in memory so leaderboard always has full team stats
+    const [allLeads, allRecentActivities, salesUsers, teamTasks] = await Promise.all([
+      prisma.lead.findMany({
+        select: { status: true, industry: true, district: true, assignedToId: true },
+      }),
+      prisma.activity.findMany({
+        where: { createdAt: { gte: lastWeekStart } },
+        select: { type: true, createdAt: true, lead: { select: { assignedToId: true } } },
+      }),
       prisma.user.findMany({ where: { role: "SALES" }, orderBy: { name: "asc" } }),
       prisma.task.findMany({
         where: { date: { gte: todayStr, lte: in7Days } },
@@ -358,23 +351,78 @@ export default async function HomePage() {
       }),
     ]);
 
+    const selectedRep = repId ? salesUsers.find(u => u.id === repId) ?? null : null;
+
+    // Dashboard sections: scoped to selected rep or full team
+    const dashLeads      = repId ? allLeads.filter(l => l.assignedToId === repId) : allLeads;
+    const dashActivities = repId
+      ? allRecentActivities.filter(a => a.lead.assignedToId === repId)
+      : allRecentActivities;
+
+    const { total, byStatus, industryData, districtData } = computeDashStats(dashLeads);
+
+    const statCards = [
+      { label: "全部商戶",    value: total,                                                 status: null,                        href: "/leads" },
+      { label: "成交",        value: byStatus.CLOSED_WON ?? 0,                             status: "CLOSED_WON" as LeadStatus,  href: "/leads?by=status&filter=CLOSED_WON" },
+      { label: "提案 / 處理", value: (byStatus.DEMO ?? 0) + (byStatus.OBJECTION ?? 0),     status: "DEMO"       as LeadStatus,  href: "/leads?by=status&filter=DEMO,OBJECTION" },
+      { label: "潛在客戶",    value: (byStatus.LEAD ?? 0) + (byStatus.CONTACTED ?? 0),     status: "LEAD"       as LeadStatus,  href: "/leads?by=status&filter=LEAD,CONTACTED" },
+    ];
+
+    const thisWeekActs   = dashActivities.filter(a => new Date(a.createdAt) >= thisWeekStart);
+    const lastWeekActs   = dashActivities.filter(a => new Date(a.createdAt) <  thisWeekStart);
+    const thisWeekByType = countByType<ActivityType>(thisWeekActs);
+    const lastWeekByType = countByType<ActivityType>(lastWeekActs);
+
+    // Leaderboard always uses full-team data
     const leaderboardEntries: LeaderboardEntry[] = salesUsers.map(user => {
-      const userLeads = leads.filter(l => l.assignedToId === user.id);
+      const userLeads = allLeads.filter(l => l.assignedToId === user.id);
       const won       = userLeads.filter(l => l.status === "CLOSED_WON").length;
       const lost      = userLeads.filter(l => l.status === "CLOSED_LOST").length;
       const active    = userLeads.length - won - lost;
-      const activitiesThisWeek = thisWeekActs.filter(a => a.lead.assignedToId === user.id).length;
-      const todayCount     = teamTasks.filter(t => t.lead.assignedToId === user.id && t.date === todayStr).length;
-      const upcomingCount  = teamTasks.filter(t => t.lead.assignedToId === user.id && t.date >  todayStr).length;
+      const activitiesThisWeek = allRecentActivities.filter(
+        a => a.lead.assignedToId === user.id && new Date(a.createdAt) >= thisWeekStart
+      ).length;
+      const todayCount = teamTasks.filter(
+        t => t.lead.assignedToId === user.id && t.date === todayStr
+      ).length;
+      const upcomingCount = teamTasks.filter(
+        t => t.lead.assignedToId === user.id && t.date > todayStr
+      ).length;
       return { user, total: userLeads.length, active, won, activitiesThisWeek, todayCount, upcomingCount };
     });
 
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{greeting}，{name} 👋</h1>
-          <p className="text-sm text-muted-foreground">全團隊數據總覽</p>
+
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">{greeting}，{name} 👋</h1>
+            <p className="text-sm text-muted-foreground">
+              {selectedRep ? `${selectedRep.name} 的個人業績` : "全團隊數據總覽"}
+            </p>
+          </div>
+          {selectedRep && (
+            <Link href="/"
+              className="flex items-center gap-1.5 rounded-lg border bg-card px-3 py-2 text-xs font-medium hover:bg-accent transition-colors shrink-0">
+              <X className="h-3.5 w-3.5" />
+              返回全隊
+            </Link>
+          )}
         </div>
+
+        {/* Rep filter banner */}
+        {selectedRep && (
+          <div className="flex items-center gap-3 rounded-xl border-2 border-foreground/20 bg-accent px-4 py-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-foreground text-background font-bold text-sm shrink-0">
+              {selectedRep.name.charAt(0)}
+            </div>
+            <div>
+              <p className="font-semibold text-sm">{selectedRep.name}</p>
+              <p className="text-xs text-muted-foreground">以下數據只顯示此銷售員的商戶</p>
+            </div>
+          </div>
+        )}
 
         {/* Stats cards */}
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
@@ -407,23 +455,43 @@ export default async function HomePage() {
         </div>
 
         {/* Leaderboard */}
-        <Leaderboard entries={leaderboardEntries} />
+        <Leaderboard entries={leaderboardEntries} selectedRepId={repId} />
+
       </div>
     );
   }
 
   // ── Sales view ─────────────────────────────────────────────────────────
 
-  const upcomingTasks = await prisma.task.findMany({
-    where: {
-      date: { gte: todayStr, lte: in7Days },
-      lead: { assignedToId: userId },
-    },
-    include: {
-      lead: { select: { id: true, storeName: true, district: true } },
-    },
-    orderBy: [{ date: "asc" }, { time: "asc" }],
-  });
+  const [leads, recentActivities, upcomingTasks] = await Promise.all([
+    prisma.lead.findMany({
+      where: { assignedToId: userId },
+      select: { status: true, industry: true, district: true, assignedToId: true },
+    }),
+    prisma.activity.findMany({
+      where: { lead: { assignedToId: userId }, createdAt: { gte: lastWeekStart } },
+      select: { type: true, createdAt: true, lead: { select: { assignedToId: true } } },
+    }),
+    prisma.task.findMany({
+      where: { date: { gte: todayStr, lte: in7Days }, lead: { assignedToId: userId } },
+      include: { lead: { select: { id: true, storeName: true, district: true } } },
+      orderBy: [{ date: "asc" }, { time: "asc" }],
+    }),
+  ]);
+
+  const { total, byStatus, industryData, districtData } = computeDashStats(leads);
+
+  const statCards = [
+    { label: "全部商戶",    value: total,                                               status: null,                        href: "/leads" },
+    { label: "成交",        value: byStatus.CLOSED_WON ?? 0,                           status: "CLOSED_WON" as LeadStatus,  href: "/leads?by=status&filter=CLOSED_WON" },
+    { label: "提案 / 處理", value: (byStatus.DEMO ?? 0) + (byStatus.OBJECTION ?? 0),   status: "DEMO"       as LeadStatus,  href: "/leads?by=status&filter=DEMO,OBJECTION" },
+    { label: "潛在客戶",    value: (byStatus.LEAD ?? 0) + (byStatus.CONTACTED ?? 0),   status: "LEAD"       as LeadStatus,  href: "/leads?by=status&filter=LEAD,CONTACTED" },
+  ];
+
+  const thisWeekActs   = recentActivities.filter(a => new Date(a.createdAt) >= thisWeekStart);
+  const lastWeekActs   = recentActivities.filter(a => new Date(a.createdAt) <  thisWeekStart);
+  const thisWeekByType = countByType<ActivityType>(thisWeekActs);
+  const lastWeekByType = countByType<ActivityType>(lastWeekActs);
 
   const todayTasks  = upcomingTasks.filter(t => t.date === todayStr);
   const futureTasks = upcomingTasks.filter(t => t.date !== todayStr);
@@ -437,7 +505,7 @@ export default async function HomePage() {
           <div>
             <h3 className="font-bold text-lg">👋 {greeting}！{name}</h3>
             <p className="text-sm opacity-90 mt-0.5">
-              你今日有 <strong className="text-white">{todayTasks.length}</strong> 個工作項目待完成！
+              你今日有 <strong>{todayTasks.length}</strong> 個工作項目待完成！
             </p>
             <div className="mt-2 space-y-1">
               {todayTasks.map(t => (
