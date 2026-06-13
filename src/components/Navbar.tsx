@@ -4,6 +4,8 @@ import { auth } from "@/auth";
 import { logout } from "@/app/login/actions";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { NavLinks } from "@/components/NavLinks";
+import { NavSearch } from "@/components/NavSearch";
+import { Suspense } from "react";
 
 export async function Navbar() {
   const session = await auth();
@@ -29,6 +31,11 @@ export async function Navbar() {
 
         {/* Nav links */}
         <NavLinks variant="dark" />
+
+        {/* Search */}
+        <Suspense>
+          <NavSearch />
+        </Suspense>
 
         {/* Right side */}
         <div className="ml-auto flex items-center gap-2">

@@ -141,8 +141,13 @@ export function LeadsClient({ leads, filterType, filterValue, isAdmin, salesUser
       ? [{ value: "all", label: "全部" }, ...ALL_INDUSTRIES.map(k => ({ value: k, label: INDUSTRY_LABELS[k].zh }))]
       : [{ value: "all", label: "全部" }, ...ALL_STATUSES.map(k => ({ value: k, label: STATUS_LABELS[k].zh }))];
 
-  const visibleLeads =
-    districtFilter === "all" ? leads : leads.filter(l => l.district === districtFilter);
+  const searchQuery = (searchParams.get("search") ?? "").toLowerCase().trim();
+
+  const visibleLeads = leads.filter(l => {
+    const matchesDistrict = districtFilter === "all" || l.district === districtFilter;
+    const matchesSearch   = !searchQuery || l.storeName.toLowerCase().includes(searchQuery);
+    return matchesDistrict && matchesSearch;
+  });
 
   const allSelected = visibleLeads.length > 0 && visibleLeads.every(l => selectedIds.has(l.id));
   const hasSelection = selectedIds.size > 0;
@@ -223,6 +228,7 @@ export function LeadsClient({ leads, filterType, filterValue, isAdmin, salesUser
       <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground">
           {visibleLeads.length} 間商戶
+          {searchQuery && <span className="ml-1">· 「{searchQuery}」</span>}
           {districtFilter !== "all" && <span className="ml-1">· {districtFilter}</span>}
           {hasSelection && (
             <span className="ml-2 font-medium" style={{ color: "#fed7aa" }}>
@@ -246,7 +252,7 @@ export function LeadsClient({ leads, filterType, filterValue, isAdmin, salesUser
       {/* ── Lead grid ───────────────────────────────────────────────── */}
       {visibleLeads.length === 0 ? (
         <div className="rounded-xl border bg-card p-8 text-center text-sm text-muted-foreground">
-          {districtFilter !== "all" ? `${districtFilter} 暫無商戶` : "沒有符合的商戶"}
+          {searchQuery ? `找不到「${searchQuery}」相關商戶` : districtFilter !== "all" ? `${districtFilter} 暫無商戶` : "沒有符合的商戶"}
         </div>
       ) : (
         <ul className="grid grid-cols-2 gap-3">
