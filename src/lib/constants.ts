@@ -1,11 +1,11 @@
 import type { Industry, LeadStatus, ActivityType, TaskType } from "@/generated/prisma/enums";
 
-export const INDUSTRY_LABELS: Record<Industry, { en: string; zh: string; color: string }> = {
-  F_AND_B:        { en: "F&B",           zh: "飲食",   color: "bg-orange-100 text-orange-700 border-orange-200" },
-  MEDICAL_BEAUTY: { en: "Medical Beauty", zh: "醫美",   color: "bg-pink-100 text-pink-700 border-pink-200" },
-  BEAUTY:         { en: "Beauty",         zh: "美容",   color: "bg-purple-100 text-purple-700 border-purple-200" },
-  FOOT:           { en: "Foot",           zh: "足療",   color: "bg-teal-100 text-teal-700 border-teal-200" },
-  OTHER:          { en: "Other",          zh: "其他",   color: "bg-gray-100 text-gray-600 border-gray-200" },
+export const INDUSTRY_LABELS: Record<Industry, { en: string; zh: string; color: string; bar: string }> = {
+  F_AND_B:        { en: "F&B",           zh: "飲食",   color: "bg-orange-100 text-orange-700 border-orange-200", bar: "bg-orange-400" },
+  MEDICAL_BEAUTY: { en: "Medical Beauty", zh: "醫美",   color: "bg-pink-100 text-pink-700 border-pink-200",       bar: "bg-pink-400"   },
+  BEAUTY:         { en: "Beauty",         zh: "美容",   color: "bg-purple-100 text-purple-700 border-purple-200", bar: "bg-purple-400" },
+  FOOT:           { en: "Foot",           zh: "足療",   color: "bg-teal-100 text-teal-700 border-teal-200",       bar: "bg-teal-400"   },
+  OTHER:          { en: "Other",          zh: "其他",   color: "bg-gray-100 text-gray-600 border-gray-200",       bar: "bg-gray-400"   },
 };
 
 export const STATUS_LABELS: Record<LeadStatus, { en: string; zh: string; color: string; icon: string }> = {
