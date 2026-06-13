@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useActionState, useState } from "react";
-import { ShieldCheck, Zap, TriangleAlert } from "lucide-react";
+import { ShieldCheck, Zap, TriangleAlert, Map, MapPin, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -141,8 +141,8 @@ export function ReviewSection({
   const ratingTier  =
     ratingNum >= 4.2 ? "good" : ratingNum >= 3.7 ? "warn" : "danger";
   const tierLabel = isEN
-    ? ratingTier === "good" ? "✅ Excellent" : ratingTier === "warn" ? "⚠️ Has Potential" : "🔴 Needs Improvement"
-    : ratingTier === "good" ? "✅ 表現優異"  : ratingTier === "warn" ? "⚠️ 表現平穩，具備優化潛力" : "🔴 急需改善";
+    ? ratingTier === "good" ? "Excellent" : ratingTier === "warn" ? "Has Potential" : "Needs Improvement"
+    : ratingTier === "good" ? "表現優異"  : ratingTier === "warn" ? "表現平穩，具備優化潛力" : "急需改善";
   const tierChipCls = {
     good:   "bg-green-50  border-green-300  text-green-700  dark:bg-green-950/60  dark:border-green-700  dark:text-green-400",
     warn:   "bg-yellow-50 border-yellow-300 text-yellow-700 dark:bg-yellow-950/60 dark:border-yellow-700 dark:text-yellow-400",
@@ -162,8 +162,8 @@ export function ReviewSection({
   const gaodeTier         = gaodeNum >= 4.2 ? "good" : gaodeNum >= 3.7 ? "warn" : "danger";
   const gaodeBigNumCls    = { good: "text-green-400", warn: "text-yellow-400", danger: "text-red-400" }[gaodeTier];
   const gaodeTierLabel = isEN
-    ? gaodeTier === "good" ? "✅ Excellent" : gaodeTier === "warn" ? "⚠️ Has Potential" : "🔴 Needs Improvement"
-    : gaodeTier === "good" ? "✅ 表現優異"  : gaodeTier === "warn" ? "⚠️ 具備潛力"      : "🔴 急需改善";
+    ? gaodeTier === "good" ? "Excellent" : gaodeTier === "warn" ? "Has Potential" : "Needs Improvement"
+    : gaodeTier === "good" ? "表現優異"  : gaodeTier === "warn" ? "具備潛力"      : "急需改善";
 
   const hasData = ratingValid || gaodeShowInReport || selectedIssues.length > 0;
 
@@ -202,7 +202,7 @@ export function ReviewSection({
     warningEnd:  "顧客流失。",
     solTitle:    "我們的解決方案",
     solBody:     "專業數碼營銷提升服務 — 優化 Google Maps 及 Amap 評分管理、統一網上資訊、建立社群平台、打造吸引餐牌相片，全面堪塞以上漏洞。",
-    waBtn:       "💬 一鍵分享報告至 WhatsApp",
+    waBtn:       "一鍵分享報告至 WhatsApp",
   };
 
   // ── Report card display strings (language-aware) ─────────────────
@@ -218,7 +218,7 @@ export function ReviewSection({
     solTitle:              "Our Solution",
     solBody:               "Professional digital marketing enhancement — Google Maps and Amap review management, unified online presence, social media setup, and professional menu photography to address all identified gaps.",
     gaodeUnregistered:     "No Amap Merchant Profile Set Up",
-    gaodeUnregisteredBadge:"❌ Zero Mainland Visitor Exposure",
+    gaodeUnregisteredBadge:"Zero Mainland Visitor Exposure",
     issueLabels: {
       missing_info:     "Incomplete Business Info (No Hours / Phone Number)",
       negative_reviews: "Negative Reviews (Unaddressed for 3+ Months)",
@@ -238,7 +238,7 @@ export function ReviewSection({
     solTitle:              S.solTitle,
     solBody:               S.solBody,
     gaodeUnregistered:     "未設置高德地圖商戶頁面",
-    gaodeUnregisteredBadge:"❌ 內地客源曝光空白",
+    gaodeUnregisteredBadge:"內地客源曝光空白",
     issueLabels:           ISSUE_LABELS as Record<string, string>,
   };
 
@@ -255,7 +255,7 @@ export function ReviewSection({
           {/* Google Maps rating */}
           <div className="space-y-1.5">
             <Label className="flex items-center gap-1.5">
-              🗺️ {S.labelRating}
+              <Map className="h-3.5 w-3.5 shrink-0" /> {S.labelRating}
             </Label>
             <div className="flex items-center gap-2">
               <Input
@@ -278,7 +278,7 @@ export function ReviewSection({
           {/* 高德地圖 rating */}
           <div className="space-y-1.5">
             <Label className="flex items-center gap-1.5">
-              📍 Amap 高德地圖評分（內地旅客）
+              <MapPin className="h-3.5 w-3.5 shrink-0" /> Amap 高德地圖評分（內地旅客）
             </Label>
             <div className="flex items-center gap-2">
               <Input
@@ -299,7 +299,7 @@ export function ReviewSection({
                     ? "bg-yellow-50 border-yellow-300 text-yellow-700"
                     : "bg-red-50 border-red-300 text-red-700"
                 )}>
-                  {parseFloat(gaodeRating) >= 4.2 ? "✅ 表現優異" : parseFloat(gaodeRating) >= 3.7 ? "⚠️ 具備潛力" : "🔴 急需改善"}
+                  {parseFloat(gaodeRating) >= 4.2 ? "表現優異" : parseFloat(gaodeRating) >= 3.7 ? "具備潛力" : "急需改善"}
                 </span>
               )}
             </div>
@@ -511,6 +511,7 @@ export function ReviewSection({
           onClick={handleWhatsApp}
           className="w-full flex items-center justify-center gap-2.5 rounded-xl bg-green-600 hover:bg-green-500 active:bg-green-700 text-white font-bold text-base py-3.5 transition-colors mt-3"
         >
+          <MessageSquare className="h-5 w-5" />
           {S.waBtn}
         </button>
         </>

@@ -27,19 +27,19 @@ const QUICK_LOG_BUTTONS: {
     type:    "WALK_IN",
     icon:    MapPin,
     label:   "Walk-in 拜訪",
-    bgClass: "border-orange-200 bg-orange-50  text-orange-700 hover:bg-orange-100  active:bg-orange-200  dark:bg-orange-900/20 dark:border-orange-800 dark:text-orange-300",
+    bgClass: "border-orange-400 bg-orange-200 text-orange-900 hover:bg-orange-300 active:bg-orange-400 dark:bg-orange-900/40 dark:border-orange-600 dark:text-orange-100",
   },
   {
     type:    "PHONE",
     icon:    Phone,
     label:   "打電話",
-    bgClass: "border-orange-300 bg-orange-100 text-orange-800 hover:bg-orange-200  active:bg-orange-300  dark:bg-orange-900/30 dark:border-orange-700 dark:text-orange-200",
+    bgClass: "border-orange-400 bg-orange-200 text-orange-900 hover:bg-orange-300 active:bg-orange-400 dark:bg-orange-900/40 dark:border-orange-600 dark:text-orange-100",
   },
   {
     type:    "WHATSAPP",
     icon:    MessageSquare,
     label:   "WhatsApp",
-    bgClass: "border-orange-400 bg-orange-200 text-orange-900 hover:bg-orange-300  active:bg-orange-400  dark:bg-orange-900/40 dark:border-orange-600 dark:text-orange-100",
+    bgClass: "border-orange-400 bg-orange-200 text-orange-900 hover:bg-orange-300 active:bg-orange-400 dark:bg-orange-900/40 dark:border-orange-600 dark:text-orange-100",
   },
 ];
 

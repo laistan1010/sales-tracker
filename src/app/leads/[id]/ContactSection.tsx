@@ -121,13 +121,13 @@ export function ContactSection({ leadId, contacts }: Props) {
               {c.phone && (
                 <a
                   href={`tel:${c.phone.replace(/\s/g, "")}`}
-                  className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 transition-colors hover:bg-blue-100 active:bg-blue-200"
+                  className="flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2.5 transition-colors hover:bg-orange-100 active:bg-orange-200 dark:border-orange-800 dark:bg-orange-900/20 dark:hover:bg-orange-900/30"
                 >
-                  <Phone className="h-4 w-4 shrink-0 text-blue-600" />
-                  <span className="text-base font-bold tracking-wide text-blue-700">
+                  <Phone className="h-4 w-4 shrink-0 text-[var(--brand)]" />
+                  <span className="text-base font-bold tracking-wide text-orange-800 dark:text-orange-200">
                     {c.phone}
                   </span>
-                  <span className="ml-auto text-xs text-blue-500">點擊撥打</span>
+                  <span className="ml-auto text-xs text-orange-500 dark:text-orange-400">點擊撥打</span>
                 </a>
               )}
             </li>
