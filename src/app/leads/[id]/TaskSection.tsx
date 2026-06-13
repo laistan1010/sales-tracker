@@ -11,14 +11,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ClipboardList, Users, Phone, Mail, Bell } from "lucide-react";
 import { createTask, deleteTask, completeTask } from "./actions";
 import { cn } from "@/lib/utils";
 import type { TaskType } from "@/generated/prisma/enums";
 
-const TASK_TYPES: { type: TaskType; icon: string; zh: string }[] = [
-  { type: "MEETING", icon: "🤝", zh: "面談" },
-  { type: "CALL",    icon: "📞", zh: "電話" },
-  { type: "EMAIL",   icon: "📧", zh: "電郵" },
+const TASK_TYPES: { type: TaskType; icon: React.ElementType; zh: string }[] = [
+  { type: "MEETING", icon: Users,  zh: "面談" },
+  { type: "CALL",    icon: Phone,  zh: "電話" },
+  { type: "EMAIL",   icon: Mail,   zh: "電郵" },
 ];
 
 interface Task {
@@ -61,6 +62,7 @@ function TaskCard({ task, leadId }: { task: Task; leadId: string }) {
 
   const status = getDateStatus(task.date);
   const meta   = TASK_TYPES.find(t => t.type === task.type)!;
+  const Icon   = meta.icon;
 
   function handleDelete() {
     if (!confirmDelete) {
@@ -90,8 +92,8 @@ function TaskCard({ task, leadId }: { task: Task; leadId: string }) {
         <div className="flex-1 min-w-0 space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
             {status === "today" && (
-              <span className="inline-flex items-center rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">
-                🔔 今日
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                <Bell className="h-3 w-3" /> 今日
               </span>
             )}
             {status === "past" && (
@@ -100,7 +102,7 @@ function TaskCard({ task, leadId }: { task: Task; leadId: string }) {
               </span>
             )}
             <span className="inline-flex items-center gap-1 rounded-full border bg-background px-2 py-0.5 text-xs font-medium">
-              {meta.icon} {meta.zh}
+              <Icon className="h-3.5 w-3.5" /> {meta.zh}
             </span>
           </div>
           <p className="text-base font-bold">
@@ -121,7 +123,7 @@ function TaskCard({ task, leadId }: { task: Task; leadId: string }) {
             type="button"
             onClick={handleComplete}
             disabled={isCompleting || isDeleting}
-            className="rounded-lg px-2.5 py-1 text-xs font-medium border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 disabled:opacity-50 transition-colors"
+            className="rounded-lg px-2.5 py-1 text-xs font-medium border border-orange-300 text-orange-700 bg-orange-50 hover:bg-orange-100 dark:border-orange-700 dark:text-orange-300 dark:bg-orange-900/20 disabled:opacity-50 transition-colors"
           >
             {isCompleting ? "…" : "✓ 完成"}
           </button>
@@ -175,7 +177,10 @@ export function TaskSection({ leadId, initialTasks }: Props) {
   return (
     <section id="task-section" className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold">📋 工作項目</h2>
+        <h2 className="flex items-center gap-1.5 text-base font-semibold">
+          <ClipboardList className="h-4 w-4 text-muted-foreground" />
+          工作項目
+        </h2>
         <Button
           size="sm"
           variant="outline"
@@ -201,14 +206,17 @@ export function TaskSection({ leadId, initialTasks }: Props) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>📋 新增工作項目</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardList className="h-4 w-4 text-[var(--brand)]" />
+              新增工作項目
+            </DialogTitle>
           </DialogHeader>
 
           <form action={formAction} className="space-y-4">
             <div className="space-y-1.5">
               <Label>類型 <span className="text-destructive">*</span></Label>
               <div className="grid grid-cols-3 gap-2">
-                {TASK_TYPES.map(({ type, icon, zh }) => (
+                {TASK_TYPES.map(({ type, icon: Icon, zh }) => (
                   <button
                     key={type}
                     type="button"
@@ -216,11 +224,14 @@ export function TaskSection({ leadId, initialTasks }: Props) {
                     className={cn(
                       "flex flex-col items-center gap-1 rounded-xl border p-3 text-sm font-medium transition-colors",
                       selectedType === type
-                        ? "border-foreground bg-foreground text-background"
+                        ? "border-[var(--brand)] bg-orange-50 text-orange-900 dark:bg-orange-900/30 dark:text-orange-100"
                         : "border-border bg-background hover:bg-accent"
                     )}
                   >
-                    <span className="text-xl">{icon}</span>
+                    <Icon className={cn(
+                      "h-5 w-5",
+                      selectedType === type ? "text-[var(--brand)]" : "text-muted-foreground"
+                    )} />
                     <span>{zh}</span>
                   </button>
                 ))}
@@ -258,12 +269,12 @@ export function TaskSection({ leadId, initialTasks }: Props) {
               <Button
                 type="submit"
                 disabled={isPending}
-                className="w-full h-14 text-base font-bold bg-green-600 hover:bg-green-500 active:bg-green-700 text-white"
+                className="w-full h-14 text-base font-bold bg-[var(--brand)] hover:bg-[var(--brand)]/90 active:bg-[var(--brand)]/80 text-white"
               >
                 {isPending ? "新增中…" : "確認新增"}
               </Button>
               <DialogClose asChild>
-                <Button className="w-full h-14 text-base font-bold bg-red-600 hover:bg-red-500 active:bg-red-700 text-white">
+                <Button type="button" variant="outline" className="w-full h-14 text-base font-bold">
                   取消
                 </Button>
               </DialogClose>
